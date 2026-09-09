@@ -173,6 +173,20 @@ h1, h2, h3 {
 }
 .btn-outline:hover { border-color: var(--amber); }
 
+.btn-edit {
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.btn-edit:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
 .status {
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -230,31 +244,40 @@ h1, h2, h3 {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 0.75rem;
 }
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
 
 /* ---------- Scaffale ---------- */
 .shelf-header {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 1.2rem;
 }
 .shelf-header h2 {
   font-size: 1.8rem;
   color: var(--text);
 }
-.filter {
-  font-size: 0.85rem;
-  color: var(--text-muted);
+.shelf-controls {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   align-items: center;
-  gap: 0.4rem;
 }
-.filter select {
+.shelf-controls input[type="text"],
+.shelf-controls select {
   background: var(--panel);
   border: 1px solid var(--line);
   color: var(--text);
   border-radius: 4px;
-  padding: 0.3rem 0.5rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
 }
 
 .shelf-grid {
@@ -284,10 +307,23 @@ h1, h2, h3 {
   flex-direction: column;
   gap: 0.35rem;
 }
+.movie-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
 .movie-title {
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.3;
+}
+.movie-genres {
+  font-size: 0.72rem;
+  color: var(--amber);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .movie-meta {
   font-size: 0.78rem;
@@ -309,6 +345,7 @@ h1, h2, h3 {
 .stars {
   display: flex;
   gap: 0.15rem;
+  margin-top: 0.2rem;
 }
 .stars button {
   background: none;
@@ -326,6 +363,9 @@ h1, h2, h3 {
   .ticket-stub { border-right: none; border-bottom: 2px dashed var(--line); }
   .review-form .row { grid-template-columns: 1fr; }
   .marquee h1 { font-size: 2.2rem; }
+  .shelf-header { flex-direction: column; align-items: flex-start; }
+  .shelf-controls { width: 100%; }
+  .shelf-controls input, .shelf-controls select { flex: 1; }
 }
 </style>
 </head>
@@ -342,10 +382,10 @@ h1, h2, h3 {
 
 <main class="page">
 
-  <!-- Pannello di aggiunta film -->
+  <!-- Pannello di aggiunta/modifica film -->
   <section class="ticket" id="add-panel">
     <div class="ticket-stub">
-      <span class="stub-label">Nuovo</span>
+      <span class="stub-label" id="stub-mode-label">Nuovo</span>
       <div id="preview-box" class="preview-box">
         <span id="preview-placeholder">Nessuna copertina</span>
         <img id="preview-img" alt="Anteprima copertina" hidden>
@@ -408,7 +448,10 @@ h1, h2, h3 {
             <label>Trama
               <textarea id="f-plot" rows="4"></textarea>
             </label>
-            <button id="save-btn" class="btn btn-primary">Aggiungi allo scaffale</button>
+            <div class="form-actions">
+              <button id="save-btn" class="btn btn-primary">Aggiungi allo scaffale</button>
+              <button id="cancel-btn" class="btn btn-outline" type="button" hidden>Annulla modifica</button>
+            </div>
             <p id="save-status" class="status" role="status"></p>
           </div>
         </li>
@@ -420,17 +463,17 @@ h1, h2, h3 {
   <section class="shelf">
     <div class="shelf-header">
       <h2>Il tuo scaffale</h2>
-      <label class="filter">
-        Mostra
+      <div class="shelf-controls">
+        <input type="text" id="search-text" placeholder="Cerca titolo o genere...">
         <select id="filter-type">
           <option value="all">Tutti i supporti</option>
           <option value="DVD">Solo DVD</option>
           <option value="Blu-ray">Solo Blu-ray</option>
           <option value="Blu-ray 4K">Solo Blu-ray 4K</option>
         </select>
-      </label>
+      </div>
     </div>
-    <p id="shelf-empty" class="status" hidden>Lo scaffale è vuoto. Carica la prima copertina per iniziare.</p>
+    <p id="shelf-empty" class="status" hidden>Nessun film trovato.</p>
     <div id="shelf-grid" class="shelf-grid"></div>
   </section>
 
@@ -452,10 +495,14 @@ const CONFIG = {
 // Inizializzazione client Supabase
 const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 
-// Stato dell'immagine in attesa
+// Stato dell'applicazione
 let pendingFile = null;
+let editingMovieId = null; // Memorizza l'ID del film se siamo in modalità modifica
+let editingCoverUrl = null; // Memorizza l'URL esistente della copertina
+let allMovies = []; // Memorizza la lista dei film in locale per la ricerca
 
 // ---------- Riferimenti agli elementi DOM ----------
+const stubModeLabel = document.getElementById("stub-mode-label");
 const coverInput = document.getElementById("cover-input");
 const previewImg = document.getElementById("preview-img");
 const previewPlaceholder = document.getElementById("preview-placeholder");
@@ -466,6 +513,7 @@ const analyzeStatus = document.getElementById("analyze-status");
 
 const reviewForm = document.getElementById("review-form");
 const saveBtn = document.getElementById("save-btn");
+const cancelBtn = document.getElementById("cancel-btn");
 const saveStatus = document.getElementById("save-status");
 
 const fTitle = document.getElementById("f-title");
@@ -477,9 +525,10 @@ const fGenres = document.getElementById("f-genres");
 const fDirector = document.getElementById("f-director");
 const fPlot = document.getElementById("f-plot");
 
+const searchText = document.getElementById("search-text");
+const filterType = document.getElementById("filter-type");
 const shelfGrid = document.getElementById("shelf-grid");
 const shelfEmpty = document.getElementById("shelf-empty");
-const filterType = document.getElementById("filter-type");
 
 // ============================================================
 // 1. Caricamento copertina & Lettura automatica OCR
@@ -531,7 +580,6 @@ async function identifyCover(file) {
 
   if (!lines.length) return "";
 
-  // Seleziona la riga più lunga tra le prime righe lette
   const candidates = lines.slice(0, 8);
   return candidates.reduce((best, l) => (l.length > best.length ? l : best), candidates[0]);
 }
@@ -540,8 +588,8 @@ manualTitle.addEventListener("input", checkReadyToAnalyze);
 
 function checkReadyToAnalyze() {
   const hasTitle = manualTitle.value.trim().length > 0;
-  const hasFile = pendingFile !== null;
-  analyzeBtn.disabled = !(hasTitle && hasFile);
+  const hasFileOrCover = pendingFile !== null || editingCoverUrl !== null;
+  analyzeBtn.disabled = !(hasTitle && hasFileOrCover);
 }
 
 // ============================================================
@@ -549,7 +597,7 @@ function checkReadyToAnalyze() {
 // ============================================================
 analyzeBtn.addEventListener("click", async () => {
   const titleToSearch = manualTitle.value.trim();
-  if (!pendingFile || !titleToSearch) return;
+  if (!titleToSearch) return;
 
   setStatus(analyzeStatus, "Ricerca dettagli in rete...", null);
   analyzeBtn.disabled = true;
@@ -558,12 +606,11 @@ analyzeBtn.addEventListener("click", async () => {
     const details = await searchTMDB(titleToSearch);
 
     fTitle.value = details.tmdbTitle || titleToSearch;
-    fType.value = "DVD";
-    fYear.value = details.year || "";
-    fDuration.value = details.duration || "";
-    fGenres.value = (details.genres || []).join(", ");
-    fDirector.value = details.director || "";
-    fPlot.value = details.plot || "";
+    fYear.value = details.year || fYear.value || "";
+    fDuration.value = details.duration || fDuration.value || "";
+    fGenres.value = (details.genres || []).join(", ") || fGenres.value || "";
+    fDirector.value = details.director || fDirector.value || "";
+    fPlot.value = details.plot || fPlot.value || "";
 
     reviewForm.hidden = false;
     
@@ -607,7 +654,7 @@ async function searchTMDB(title) {
 }
 
 // ============================================================
-// 3. Salvataggio nello scaffale
+// 3. Salvataggio / Modifica nello scaffale
 // ============================================================
 saveBtn.addEventListener("click", async () => {
   if (!fTitle.value.trim()) {
@@ -619,9 +666,14 @@ saveBtn.addEventListener("click", async () => {
   setStatus(saveStatus, "Salvataggio in corso...", null);
 
   try {
-    const coverUrl = await uploadCover(pendingFile);
+    let coverUrl = editingCoverUrl;
+    
+    // Se c'è un nuovo file selezionato, caricatalo
+    if (pendingFile) {
+      coverUrl = await uploadCover(pendingFile);
+    }
 
-    const { error } = await supabaseClient.from("movies").insert({
+    const payload = {
       title: fTitle.value.trim(),
       media_type: fType.value,
       release_year: fYear.value ? parseInt(fYear.value, 10) : null,
@@ -631,11 +683,24 @@ saveBtn.addEventListener("click", async () => {
       genres: fGenres.value ? fGenres.value.split(",").map((s) => s.trim()).filter(Boolean) : null,
       director: fDirector.value.trim() || null,
       cover_url: coverUrl,
-    });
+    };
 
-    if (error) throw error;
+    if (editingMovieId) {
+      // Modalità Modifica
+      const { error } = await supabaseClient
+        .from("movies")
+        .update(payload)
+        .eq("id", editingMovieId);
 
-    setStatus(saveStatus, "Aggiunto allo scaffale.", "ok");
+      if (error) throw error;
+      setStatus(saveStatus, "Film modificato con successo.", "ok");
+    } else {
+      // Modalità Inserimento
+      const { error } = await supabaseClient.from("movies").insert(payload);
+      if (error) throw error;
+      setStatus(saveStatus, "Aggiunto allo scaffale.", "ok");
+    }
+
     resetAddPanel();
     await loadMovies();
   } catch (err) {
@@ -645,6 +710,8 @@ saveBtn.addEventListener("click", async () => {
     saveBtn.disabled = false;
   }
 });
+
+cancelBtn.addEventListener("click", resetAddPanel);
 
 async function uploadCover(file) {
   if (!file) return null;
@@ -657,19 +724,64 @@ async function uploadCover(file) {
 
 function resetAddPanel() {
   pendingFile = null;
+  editingMovieId = null;
+  editingCoverUrl = null;
+
+  stubModeLabel.textContent = "Nuovo";
+  saveBtn.textContent = "Aggiungi allo scaffale";
+  cancelBtn.hidden = true;
+
   coverInput.value = "";
   manualTitle.value = "";
   manualTitle.disabled = true;
   previewImg.hidden = true;
+  previewImg.src = "";
   previewPlaceholder.hidden = false;
   analyzeBtn.disabled = true;
   reviewForm.hidden = true;
+
   [fTitle, fYear, fDuration, fGenres, fDirector, fPlot].forEach((el) => (el.value = ""));
   if (fRating) fRating.value = "0";
+  setStatus(analyzeStatus, "", null);
+  setStatus(saveStatus, "", null);
+}
+
+// Avvia la modifica di un film nello scaffale
+function startEditingMovie(movie) {
+  editingMovieId = movie.id;
+  editingCoverUrl = movie.cover_url;
+
+  stubModeLabel.textContent = "Modifica";
+  saveBtn.textContent = "Salva Modifiche";
+  cancelBtn.hidden = false;
+
+  if (movie.cover_url) {
+    previewImg.src = movie.cover_url;
+    previewImg.hidden = false;
+    previewPlaceholder.hidden = true;
+  }
+
+  manualTitle.value = movie.title;
+  manualTitle.disabled = false;
+  
+  fTitle.value = movie.title || "";
+  fType.value = movie.media_type || "DVD";
+  fYear.value = movie.release_year || "";
+  fDuration.value = movie.duration_minutes || "";
+  fRating.value = movie.rating || "0";
+  fGenres.value = Array.isArray(movie.genres) ? movie.genres.join(", ") : "";
+  fDirector.value = movie.director || "";
+  fPlot.value = movie.plot || "";
+
+  reviewForm.hidden = false;
+  checkReadyToAnalyze();
+
+  // Scorrimento verso il pannello di modifica
+  document.getElementById("add-panel").scrollIntoView({ behavior: "smooth" });
 }
 
 // ============================================================
-// 4. Scaffale: caricamento ed elenco dei film
+// 4. Scaffale: ricerca, filtraggio ed elenco
 // ============================================================
 async function loadMovies() {
   const { data, error } = await supabaseClient
@@ -682,17 +794,35 @@ async function loadMovies() {
     return;
   }
 
-  renderShelf(data);
+  allMovies = data || [];
+  applyFiltersAndRender();
+}
+
+function applyFiltersAndRender() {
+  const query = searchText.value.toLowerCase().trim();
+  const selectedType = filterType.value;
+
+  const filtered = allMovies.filter((movie) => {
+    // Filtro per supporto
+    const matchesType = selectedType === "all" || movie.media_type === selectedType;
+
+    // Filtro per titolo e genere
+    const titleMatch = (movie.title || "").toLowerCase().includes(query);
+    const genresMatch = Array.isArray(movie.genres) 
+      ? movie.genres.some((g) => g.toLowerCase().includes(query)) 
+      : false;
+
+    return matchesType && (query === "" || titleMatch || genresMatch);
+  });
+
+  renderShelf(filtered);
 }
 
 function renderShelf(movies) {
-  const filter = filterType.value;
-  const filtered = filter === "all" ? movies : movies.filter((m) => m.media_type === filter);
-
   shelfGrid.innerHTML = "";
-  shelfEmpty.hidden = filtered.length > 0;
+  shelfEmpty.hidden = movies.length > 0;
 
-  filtered.forEach((movie) => {
+  movies.forEach((movie) => {
     shelfGrid.appendChild(renderMovieCard(movie));
   });
 }
@@ -702,11 +832,16 @@ function renderMovieCard(movie) {
   card.className = "movie-card";
 
   const badgeClass = movie.media_type === "DVD" ? "badge-dvd" : "badge-bluray";
+  const genreText = Array.isArray(movie.genres) ? movie.genres.join(", ") : "";
 
   card.innerHTML = `
     <img class="movie-cover" src="${movie.cover_url || ""}" alt="Copertina di ${escapeHtml(movie.title)}">
     <div class="movie-info">
-      <div class="movie-title">${escapeHtml(movie.title)}</div>
+      <div class="movie-header-row">
+        <div class="movie-title">${escapeHtml(movie.title)}</div>
+        <button class="btn-edit" title="Modifica film">✏️</button>
+      </div>
+      ${genreText ? `<div class="movie-genres">${escapeHtml(genreText)}</div>` : ''}
       <div class="movie-meta">
         <span class="badge ${badgeClass}">${movie.media_type}</span>
         <span>${movie.release_year || "—"}</span>
@@ -716,6 +851,10 @@ function renderMovieCard(movie) {
     </div>
   `;
 
+  // Bottone modifica
+  card.querySelector(".btn-edit").addEventListener("click", () => startEditingMovie(movie));
+
+  // Stelle
   const starsBox = card.querySelector(".stars");
   renderStars(starsBox, movie.rating || 0, movie.id);
 
@@ -740,10 +879,17 @@ async function setRating(movieId, rating, container) {
     console.error(error);
     return;
   }
+  
+  // Aggiorna anche nello stato locale
+  const target = allMovies.find(m => m.id === movieId);
+  if (target) target.rating = rating;
+
   renderStars(container, rating, movieId);
 }
 
-filterType.addEventListener("change", loadMovies);
+// Listener per la ricerca e il filtraggio in tempo reale
+searchText.addEventListener("input", applyFiltersAndRender);
+filterType.addEventListener("change", applyFiltersAndRender);
 
 // ---------- Utilità ----------
 function setStatus(el, message, kind) {
