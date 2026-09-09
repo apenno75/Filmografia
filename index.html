@@ -39,28 +39,25 @@ h1, h2, h3 {
   font-weight: 400;
 }
 
-/* ---------- Marquee header ---------- */
+/* Header */
 .marquee {
   background: linear-gradient(180deg, #191c26, #12141c);
   border-bottom: 1px solid var(--line);
-  padding: 2.2rem 1.5rem 1.6rem;
+  padding: 1.5rem 1rem 1.2rem;
+  text-align: center;
 }
-.marquee-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
+.marquee-inner { max-width: 1100px; margin: 0 auto; }
 .marquee h1 {
-  font-size: 3rem;
+  font-size: 2.5rem;
   color: var(--amber);
   text-shadow: 0 0 18px rgba(232, 163, 61, 0.35);
 }
 .marquee p {
-  margin: 0.35rem 0 0;
+  margin: 0.2rem 0 0;
   color: var(--text-muted);
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
-/* Divisore a foro di pellicola */
 .sprocket {
   height: 14px;
   background-image: radial-gradient(circle, var(--bg) 4px, transparent 4.5px);
@@ -72,37 +69,54 @@ h1, h2, h3 {
 .page {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 1.5rem 1rem 3rem;
 }
 
-/* ---------- Pannello "biglietto" ---------- */
-.ticket {
-  display: grid;
-  grid-template-columns: 220px 1fr;
+/* Pulsanti di Azione Principali */
+.main-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Pannello Accordion (Form e Cerca) */
+.collapsible-panel {
+  display: none;
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  overflow: hidden;
-  margin-bottom: 3rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.2s ease-in-out;
+}
+.collapsible-panel.open { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Pannello Ticket Form */
+.ticket {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 1rem;
 }
 .ticket-stub {
   background: var(--panel-raised);
   border-right: 2px dashed var(--line);
-  padding: 1.5rem 1.25rem;
+  padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.9rem;
-  position: relative;
+  gap: 0.8rem;
 }
-.stub-label {
-  align-self: flex-start;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
+.stub-label { align-self: flex-start; font-size: 0.78rem; color: var(--text-muted); }
 .preview-box {
-  width: 150px;
-  height: 210px;
+  width: 140px;
+  height: 195px;
   border: 1px solid var(--line);
   border-radius: 4px;
   display: flex;
@@ -113,18 +127,8 @@ h1, h2, h3 {
   text-align: center;
   padding: 0.5rem;
 }
-.preview-box span {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-.preview-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.ticket-body {
-  padding: 1.5rem 1.75rem;
-}
+.preview-box span { color: var(--text-muted); font-size: 0.8rem; }
+.preview-box img { width: 100%; height: 100%; object-fit: cover; }
 
 .steps {
   list-style: none;
@@ -132,46 +136,26 @@ h1, h2, h3 {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
+  gap: 1.2rem;
 }
-.steps h3 {
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--text);
-  margin-bottom: 0.25rem;
-}
-.steps p {
-  margin: 0 0 0.6rem;
-  color: var(--text-muted);
-  font-size: 0.92rem;
-}
+.steps h3 { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.95rem; color: var(--text); margin-bottom: 0.2rem; }
+.steps p { margin: 0 0 0.5rem; color: var(--text-muted); font-size: 0.85rem; }
 
+/* Bottoni */
 .btn {
   display: inline-block;
   border: none;
   border-radius: 4px;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.92rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   font-family: 'Inter', sans-serif;
   text-align: center;
 }
-.btn-primary {
-  background: var(--amber);
-  color: #1b1405;
-}
-.btn-primary:disabled {
-  background: var(--amber-dim);
-  color: #7a7365;
-  cursor: not-allowed;
-}
-.btn-outline {
-  background: transparent;
-  border: 1px solid var(--line);
-  color: var(--text);
-}
+.btn-primary { background: var(--amber); color: #1b1405; }
+.btn-primary:disabled { background: var(--amber-dim); color: #7a7365; cursor: not-allowed; }
+.btn-outline { background: transparent; border: 1px solid var(--line); color: var(--text); }
 .btn-outline:hover { border-color: var(--amber); }
 
 .btn-edit {
@@ -183,108 +167,50 @@ h1, h2, h3 {
   border-radius: 4px;
   cursor: pointer;
 }
-.btn-edit:hover {
-  border-color: var(--amber);
-  color: var(--amber);
-}
+.btn-edit:hover { border-color: var(--amber); color: var(--amber); }
 
-.status {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  min-height: 1.2em;
-}
+.status { font-size: 0.85rem; color: var(--text-muted); min-height: 1.2em; }
 .status.error { color: var(--brick); }
 .status.ok { color: var(--teal); }
 
-/* ---------- Form e input ---------- */
-.search-box {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  max-width: 480px;
-}
-.search-box input[type="text"] {
+/* Form */
+.search-box, .review-form { display: flex; flex-direction: column; gap: 0.75rem; max-width: 480px; }
+.review-form { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--line); }
+.search-box input, .review-form input, .review-form select, .review-form textarea {
   background: #14161e;
   border: 1px solid var(--line);
   border-radius: 4px;
   color: var(--text);
-  padding: 0.6rem;
+  padding: 0.55rem;
   font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
+.review-form label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: var(--text-muted); }
+.review-form .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+.form-actions { display: flex; gap: 0.5rem; align-items: center; }
 
-.review-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  max-width: 480px;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px dashed var(--line);
-}
-.review-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-.review-form input,
-.review-form select,
-.review-form textarea {
+/* Ricerca */
+.search-panel-inner { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.search-panel-inner input, .search-panel-inner select {
   background: #14161e;
   border: 1px solid var(--line);
-  border-radius: 4px;
   color: var(--text);
-  padding: 0.5rem 0.6rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-}
-.review-form .row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0.75rem;
-}
-.form-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+  border-radius: 4px;
+  padding: 0.55rem;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 180px;
 }
 
-/* ---------- Scaffale ---------- */
-.shelf-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.2rem;
-}
-.shelf-header h2 {
-  font-size: 1.8rem;
-  color: var(--text);
-}
-.shelf-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-}
-.shelf-controls input[type="text"],
-.shelf-controls select {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  color: var(--text);
-  border-radius: 4px;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.85rem;
-  font-family: 'Inter', sans-serif;
-}
+/* Scaffale & Grid */
+.shelf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.shelf-header h2 { font-size: 1.6rem; color: var(--text); }
+.movie-count { font-size: 0.85rem; color: var(--text-muted); }
 
 .shelf-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1.4rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1.2rem;
 }
 
 .movie-card {
@@ -302,69 +228,33 @@ h1, h2, h3 {
   background: #14161e;
   display: block;
   cursor: pointer;
-  transition: opacity 0.2s;
 }
-.movie-cover:hover {
-  opacity: 0.85;
-}
-.movie-info {
-  padding: 0.7rem 0.8rem 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-.movie-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.3rem;
-}
-.movie-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  line-height: 1.3;
-}
-.movie-genres {
-  font-size: 0.72rem;
-  color: var(--amber);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.movie-meta {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-.badge {
-  display: inline-block;
-  padding: 0.1rem 0.45rem;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
+.movie-info { padding: 0.6rem 0.7rem 0.8rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.movie-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.3rem; }
+.movie-title { font-size: 0.9rem; font-weight: 600; line-height: 1.2; }
+.movie-genres { font-size: 0.7rem; color: var(--amber); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.movie-meta { font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 0.4rem; align-items: center; }
+.badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.68rem; font-weight: 600; }
 .badge-dvd { background: rgba(63,167,150,0.18); color: var(--teal); }
 .badge-bluray { background: rgba(232,163,61,0.18); color: var(--amber); }
 
-.stars {
-  display: flex;
-  gap: 0.15rem;
-  margin-top: 0.2rem;
-}
-.stars button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.05rem;
-  color: var(--line);
-  padding: 0;
-  line-height: 1;
-}
+.stars { display: flex; gap: 0.1rem; margin-top: 0.2rem; }
+.stars button { background: none; border: none; cursor: pointer; font-size: 0.95rem; color: var(--line); padding: 0; line-height: 1; }
 .stars button.filled { color: var(--amber); }
 
-/* Modali Generici */
+/* Paginazione */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.pagination-info { font-size: 0.85rem; color: var(--text-muted); }
+
+/* Modali */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -376,9 +266,7 @@ h1, h2, h3 {
   z-index: 1000;
   padding: 1rem;
 }
-.modal-overlay.active {
-  display: flex;
-}
+.modal-overlay.active { display: flex; }
 .modal-box {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -390,21 +278,9 @@ h1, h2, h3 {
   padding: 1rem;
   gap: 1rem;
 }
+.crop-container { overflow: auto; max-height: 60vh; touch-action: none; }
+.crop-container canvas { display: block; max-width: 100%; cursor: crosshair; }
 
-/* Modal Ritaglio */
-.crop-container {
-  overflow: auto;
-  max-height: 60vh;
-  position: relative;
-  touch-action: none;
-}
-.crop-container canvas {
-  display: block;
-  max-width: 100%;
-  cursor: crosshair;
-}
-
-/* Modal Dettaglio Film A Tutto Schermo */
 .detail-modal-box {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -413,97 +289,37 @@ h1, h2, h3 {
   max-width: 850px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 2rem;
+  padding: 1.5rem;
   position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 .detail-close-btn {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.8rem; right: 0.8rem;
   background: var(--panel-raised);
   border: 1px solid var(--line);
   color: var(--text);
-  font-size: 1.2rem;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.detail-close-btn:hover {
-  border-color: var(--amber);
-  color: var(--amber);
-}
-.detail-grid {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 2rem;
-}
-.detail-cover {
-  width: 100%;
-  aspect-ratio: 2 / 3;
-  object-fit: cover;
-  border-radius: 4px;
-  border: 1px solid var(--line);
-  background: #14161e;
-}
-.detail-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-.detail-title {
-  font-size: 2.2rem;
-  line-height: 1.1;
-  color: var(--amber);
-}
-.detail-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.8rem;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-.detail-rating {
-  font-size: 1.2rem;
-  color: var(--amber);
-}
-.detail-genres {
-  font-size: 0.9rem;
-  color: var(--teal);
-  font-weight: 600;
-}
-.detail-director {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-}
-.detail-plot-title {
   font-size: 1.1rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-  color: var(--text);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
 }
-.detail-plot {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
+.detail-grid { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; }
+.detail-cover { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); background: #14161e; }
+.detail-info { display: flex; flex-direction: column; gap: 0.7rem; }
+.detail-title { font-size: 1.8rem; line-height: 1.1; color: var(--amber); }
+.detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted); }
+.detail-rating { font-size: 1.1rem; color: var(--amber); }
+.detail-genres { font-size: 0.85rem; color: var(--teal); font-weight: 600; }
+.detail-director { font-size: 0.85rem; color: var(--text-muted); }
+.detail-plot { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; white-space: pre-wrap; }
 
 @media (max-width: 640px) {
   .ticket { grid-template-columns: 1fr; }
   .ticket-stub { border-right: none; border-bottom: 2px dashed var(--line); }
   .review-form .row { grid-template-columns: 1fr; }
-  .marquee h1 { font-size: 2.2rem; }
-  .shelf-header { flex-direction: column; align-items: flex-start; }
-  .shelf-controls { width: 100%; }
-  .shelf-controls input, .shelf-controls select { flex: 1; }
   .detail-grid { grid-template-columns: 1fr; }
-  .detail-cover { max-width: 200px; margin: 0 auto; }
+  .detail-cover { max-width: 180px; margin: 0 auto; }
 }
 </style>
 </head>
@@ -512,7 +328,7 @@ h1, h2, h3 {
 <header class="marquee">
   <div class="marquee-inner">
     <h1>Cineteca</h1>
-    <p>la tua videoteca personale, catalogata a partire dalla copertina</p>
+    <p>la tua videoteca personale</p>
   </div>
 </header>
 
@@ -520,81 +336,102 @@ h1, h2, h3 {
 
 <main class="page">
 
-  <!-- Pannello di aggiunta/modifica film -->
-  <section class="ticket" id="add-panel">
-    <div class="ticket-stub">
-      <span class="stub-label" id="stub-mode-label">Nuovo</span>
-      <div id="preview-box" class="preview-box">
-        <span id="preview-placeholder">Nessuna copertina</span>
-        <img id="preview-img" alt="Anteprima copertina" hidden>
-      </div>
-      <label class="btn btn-outline" for="cover-input">Scegli copertina</label>
-      <input type="file" id="cover-input" accept="image/*" capture="environment" hidden>
-      <button id="crop-btn" type="button" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.6rem; width:100%; display:none;">✂️ Seleziona area titolo</button>
-    </div>
+  <!-- Pulsanti principali -->
+  <div class="main-actions">
+    <button id="toggle-add-btn" class="btn btn-primary">➕ Carica Nuovo Film</button>
+    <button id="toggle-search-btn" class="btn btn-outline">🔍 Cerca e Filtra</button>
+  </div>
 
-    <div class="ticket-body">
-      <ol class="steps">
-        <li>
-          <h3>1. Carica la foto della copertina</h3>
-          <p>Il titolo verrà letto automaticamente dalla foto.</p>
-        </li>
-        <li>
-          <h3>2. Verificalo e cerca le informazioni</h3>
-          <div class="search-box">
-            <input type="text" id="manual-title" placeholder="Riconoscimento titolo..." disabled>
-            <button id="analyze-btn" class="btn btn-primary" disabled>Analizza e cerca dati</button>
-          </div>
-          <p id="analyze-status" class="status" role="status"></p>
-        </li>
-        <li>
-          <h3>3. Controlla e salva nello scaffale</h3>
-          <div id="review-form" class="review-form" hidden>
-            <label>Titolo confermato
-              <input type="text" id="f-title">
-            </label>
-            <div class="row">
-              <label>Tipo
-                <select id="f-type">
-                  <option value="DVD">DVD</option>
-                  <option value="Blu-ray">Blu-ray</option>
-                  <option value="Blu-ray 4K">Blu-ray 4K</option>
+  <!-- Pannello Ricerca -->
+  <section id="search-panel" class="collapsible-panel">
+    <div class="search-panel-inner">
+      <input type="text" id="search-text" placeholder="Cerca titolo o genere...">
+      <select id="filter-type">
+        <option value="all">Tutti i supporti</option>
+        <option value="DVD">Solo DVD</option>
+        <option value="Blu-ray">Solo Blu-ray</option>
+        <option value="Blu-ray 4K">Solo Blu-ray 4K</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Pannello Inserimento/Modifica -->
+  <section id="add-panel" class="collapsible-panel">
+    <div class="ticket">
+      <div class="ticket-stub">
+        <span class="stub-label" id="stub-mode-label">Nuovo</span>
+        <div id="preview-box" class="preview-box">
+          <span id="preview-placeholder">Nessuna copertina</span>
+          <img id="preview-img" alt="Anteprima copertina" hidden>
+        </div>
+        <label class="btn btn-outline" for="cover-input">Scegli foto</label>
+        <input type="file" id="cover-input" accept="image/*" capture="environment" hidden>
+        <button id="crop-btn" type="button" class="btn btn-outline" style="font-size:0.75rem; padding:0.3rem 0.5rem; width:100%; display:none;">✂️ Area titolo</button>
+      </div>
+
+      <div class="ticket-body">
+        <ol class="steps">
+          <li>
+            <h3>1. Foto copertina</h3>
+            <p>Il titolo verrà letto automaticamente.</p>
+          </li>
+          <li>
+            <h3>2. Verifica titolo</h3>
+            <div class="search-box">
+              <input type="text" id="manual-title" placeholder="Riconoscimento titolo..." disabled>
+              <button id="analyze-btn" class="btn btn-primary" disabled>Analizza e cerca dati</button>
+            </div>
+            <p id="analyze-status" class="status" role="status"></p>
+          </li>
+          <li>
+            <h3>3. Conferma e salva</h3>
+            <div id="review-form" class="review-form" hidden>
+              <label>Titolo
+                <input type="text" id="f-title">
+              </label>
+              <div class="row">
+                <label>Tipo
+                  <select id="f-type">
+                    <option value="DVD">DVD</option>
+                    <option value="Blu-ray">Blu-ray</option>
+                    <option value="Blu-ray 4K">Blu-ray 4K</option>
+                  </select>
+                </label>
+                <label>Anno
+                  <input type="number" id="f-year" min="1900" max="2100">
+                </label>
+                <label>Durata (min)
+                  <input type="number" id="f-duration" min="1">
+                </label>
+              </div>
+              <label>Valutazione
+                <select id="f-rating">
+                  <option value="0">Nessun voto</option>
+                  <option value="1">★☆☆☆☆ (1/5)</option>
+                  <option value="2">★★☆☆☆ (2/5)</option>
+                  <option value="3">★★★☆☆ (3/5)</option>
+                  <option value="4">★★★★☆ (4/5)</option>
+                  <option value="5">★★★★★ (5/5)</option>
                 </select>
               </label>
-              <label>Anno
-                <input type="number" id="f-year" min="1900" max="2100">
+              <label>Genere
+                <input type="text" id="f-genres" placeholder="Azione, Commedia...">
               </label>
-              <label>Durata (min)
-                <input type="number" id="f-duration" min="1">
+              <label>Regia
+                <input type="text" id="f-director">
               </label>
+              <label>Trama
+                <textarea id="f-plot" rows="3"></textarea>
+              </label>
+              <div class="form-actions">
+                <button id="save-btn" class="btn btn-primary">Aggiungi</button>
+                <button id="cancel-btn" class="btn btn-outline" type="button">Annulla</button>
+              </div>
+              <p id="save-status" class="status" role="status"></p>
             </div>
-            <label>Valutazione
-              <select id="f-rating">
-                <option value="0">Nessun voto</option>
-                <option value="1">★☆☆☆☆ (1/5)</option>
-                <option value="2">★★☆☆☆ (2/5)</option>
-                <option value="3">★★★☆☆ (3/5)</option>
-                <option value="4">★★★★☆ (4/5)</option>
-                <option value="5">★★★★★ (5/5)</option>
-              </select>
-            </label>
-            <label>Genere
-              <input type="text" id="f-genres" placeholder="Azione, Fantascienza...">
-            </label>
-            <label>Regia
-              <input type="text" id="f-director">
-            </label>
-            <label>Trama
-              <textarea id="f-plot" rows="4"></textarea>
-            </label>
-            <div class="form-actions">
-              <button id="save-btn" class="btn btn-primary">Aggiungi allo scaffale</button>
-              <button id="cancel-btn" class="btn btn-outline" type="button" hidden>Annulla modifica</button>
-            </div>
-            <p id="save-status" class="status" role="status"></p>
-          </div>
-        </li>
-      </ol>
+          </li>
+        </ol>
+      </div>
     </div>
   </section>
 
@@ -602,26 +439,26 @@ h1, h2, h3 {
   <section class="shelf">
     <div class="shelf-header">
       <h2>Il tuo scaffale</h2>
-      <div class="shelf-controls">
-        <input type="text" id="search-text" placeholder="Cerca titolo o genere...">
-        <select id="filter-type">
-          <option value="all">Tutti i supporti</option>
-          <option value="DVD">Solo DVD</option>
-          <option value="Blu-ray">Solo Blu-ray</option>
-          <option value="Blu-ray 4K">Solo Blu-ray 4K</option>
-        </select>
-      </div>
+      <span class="movie-count" id="movie-count"></span>
     </div>
+
     <p id="shelf-empty" class="status" hidden>Nessun film trovato.</p>
     <div id="shelf-grid" class="shelf-grid"></div>
+
+    <!-- Paginazione -->
+    <div id="pagination-controls" class="pagination" hidden>
+      <button id="prev-page-btn" class="btn btn-outline" disabled>← Precedente</button>
+      <span id="pagination-info" class="pagination-info">Pagina 1 di 1</span>
+      <button id="next-page-btn" class="btn btn-outline" disabled>Successiva →</button>
+    </div>
   </section>
 
 </main>
 
-<!-- Modal Ritaglio Area Titolo -->
+<!-- Modal Ritaglio -->
 <div id="crop-modal" class="modal-overlay">
   <div class="modal-box">
-    <h3 style="margin:0; font-family:'Inter'; font-size:1rem;">Traccia un rettangolo attorno al titolo:</h3>
+    <h3 style="margin:0; font-family:'Inter'; font-size:0.9rem;">Traccia un rettangolo attorno al titolo:</h3>
     <div class="crop-container">
       <canvas id="crop-canvas"></canvas>
     </div>
@@ -632,7 +469,7 @@ h1, h2, h3 {
   </div>
 </div>
 
-<!-- Modal Scheda Dettaglio Film -->
+<!-- Modal Dettaglio Film -->
 <div id="detail-modal" class="modal-overlay">
   <div class="detail-modal-box">
     <button id="detail-close-btn" class="detail-close-btn" title="Chiudi">✕</button>
@@ -648,7 +485,6 @@ h1, h2, h3 {
         </div>
         <div id="d-genres" class="detail-genres"></div>
         <div id="d-director" class="detail-director"></div>
-        <div class="detail-plot-title">Trama</div>
         <div id="d-plot" class="detail-plot"></div>
       </div>
     </div>
@@ -658,14 +494,12 @@ h1, h2, h3 {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
-// ============================================================
-// CONFIGURAZIONE
-// ============================================================
 const CONFIG = {
   SUPABASE_URL: "https://erukzvrtjnvyzjvfuirn.supabase.co",
   SUPABASE_KEY: "sb_publishable_FDhQ03affjzeyhCHuoKulg_Rp7PdyLM",
   TMDB_API_KEY: "2c669816245012266d15d06607d3d413",
   TMDB_LANGUAGE: "it-IT",
+  ITEMS_PER_PAGE: 5
 };
 
 const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
@@ -674,6 +508,14 @@ let pendingFile = null;
 let editingMovieId = null;
 let editingCoverUrl = null;
 let allMovies = [];
+let filteredMovies = [];
+let currentPage = 1;
+
+// Elementi UI
+const toggleAddBtn = document.getElementById("toggle-add-btn");
+const toggleSearchBtn = document.getElementById("toggle-search-btn");
+const addPanel = document.getElementById("add-panel");
+const searchPanel = document.getElementById("search-panel");
 
 const stubModeLabel = document.getElementById("stub-mode-label");
 const coverInput = document.getElementById("cover-input");
@@ -703,13 +545,18 @@ const searchText = document.getElementById("search-text");
 const filterType = document.getElementById("filter-type");
 const shelfGrid = document.getElementById("shelf-grid");
 const shelfEmpty = document.getElementById("shelf-empty");
+const movieCount = document.getElementById("movie-count");
+
+const paginationControls = document.getElementById("pagination-controls");
+const prevPageBtn = document.getElementById("prev-page-btn");
+const nextPageBtn = document.getElementById("next-page-btn");
+const paginationInfo = document.getElementById("pagination-info");
 
 const cropModal = document.getElementById("crop-modal");
 const cropCanvas = document.getElementById("crop-canvas");
 const cropCancelBtn = document.getElementById("crop-cancel-btn");
 const cropConfirmBtn = document.getElementById("crop-confirm-btn");
 
-// Modale Dettagli
 const detailModal = document.getElementById("detail-modal");
 const detailCloseBtn = document.getElementById("detail-close-btn");
 const dCover = document.getElementById("d-cover");
@@ -722,9 +569,23 @@ const dGenres = document.getElementById("d-genres");
 const dDirector = document.getElementById("d-director");
 const dPlot = document.getElementById("d-plot");
 
-// ============================================================
-// 1. Caricamento copertina & OCR
-// ============================================================
+// Toggle Pannelli Accordion
+toggleAddBtn.addEventListener("click", () => {
+  const isOpen = addPanel.classList.contains("open");
+  addPanel.classList.toggle("open", !isOpen);
+  searchPanel.classList.remove("open");
+  if (!isOpen && editingMovieId === null) {
+    resetAddPanel();
+  }
+});
+
+toggleSearchBtn.addEventListener("click", () => {
+  const isOpen = searchPanel.classList.contains("open");
+  searchPanel.classList.toggle("open", !isOpen);
+  addPanel.classList.remove("open");
+});
+
+// OCR & File Input
 coverInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -743,19 +604,18 @@ coverInput.addEventListener("change", async (e) => {
 });
 
 async function processAndIdentify(imageBlob) {
-  setStatus(analyzeStatus, "Lettura automatica del titolo in corso...", null);
-
+  setStatus(analyzeStatus, "Lettura automatica titolo...", null);
   try {
     const detectedTitle = await identifyCover(imageBlob);
     if (detectedTitle) {
       manualTitle.value = detectedTitle;
-      setStatus(analyzeStatus, "Titolo letto! Modificalo se errato, poi premi 'Analizza e cerca dati'.", "ok");
+      setStatus(analyzeStatus, "Titolo letto! Premi 'Analizza e cerca dati'.", "ok");
     } else {
-      setStatus(analyzeStatus, "Impossibile leggere il titolo. Inseriscilo a mano o usa 'Seleziona area titolo'.", "error");
+      setStatus(analyzeStatus, "Titolo non letto. Inseriscilo a mano.", "error");
     }
   } catch (err) {
     console.error(err);
-    setStatus(analyzeStatus, "Lettura OCR fallita. Inserisci il titolo a mano.", "error");
+    setStatus(analyzeStatus, "Lettura OCR fallita.", "error");
   } finally {
     checkReadyToAnalyze();
   }
@@ -763,43 +623,17 @@ async function processAndIdentify(imageBlob) {
 
 async function identifyCover(fileOrBlob) {
   const processedBlob = await preprocessImage(fileOrBlob);
-
-  const { data } = await Tesseract.recognize(processedBlob || fileOrBlob, "ita+eng", {
-    logger: (m) => {
-      if (m.status === "recognizing text" && typeof m.progress === "number") {
-        setStatus(analyzeStatus, `Lettura avanzata titolo (${Math.round(m.progress * 100)}%)...`, null);
-      }
-    }
-  });
-
+  const { data } = await Tesseract.recognize(processedBlob || fileOrBlob, "ita+eng");
   if (!data || !data.lines || data.lines.length === 0) return "";
 
-  const stopWords = [
-    "dvd", "bluray", "blu-ray", "4k", "ultrahd", "special edition", 
-    "edizione speciale", "un film di", "vincitore di", "collezione", 
-    "cinema", "disney", "universal", "warner", "paramount", "sony",
-    "must have", "versione integrale", "film", "video"
-  ];
-
+  const stopWords = ["dvd", "bluray", "blu-ray", "4k", "ultrahd", "special edition", "un film di"];
   const scoredLines = data.lines.map((line) => {
     const rawText = line.text.replace(/[^\p{L}\p{N}\s:'’\-]/gu, " ").replace(/\s+/g, " ").trim();
-    if (rawText.length < 2) return { text: "", score: 0 };
-
-    const lowerText = rawText.toLowerCase();
-    if (stopWords.some((sw) => lowerText.includes(sw))) {
-      return { text: rawText, score: 0 };
+    if (rawText.length < 2 || stopWords.some((sw) => rawText.toLowerCase().includes(sw))) {
+      return { text: "", score: 0 };
     }
-
-    const bbox = line.bbox;
-    const fontHeight = bbox ? (bbox.y1 - bbox.y0) : 10;
-    let score = fontHeight * Math.log2(rawText.length + 1);
-
-    const lineCenterY = bbox ? (bbox.y0 + bbox.y1) / 2 : 0;
-    if (lineCenterY > 0) {
-      score *= 1.2; 
-    }
-
-    return { text: rawText, score };
+    const fontHeight = line.bbox ? (line.bbox.y1 - line.bbox.y0) : 10;
+    return { text: rawText, score: fontHeight * Math.log2(rawText.length + 1) };
   });
 
   scoredLines.sort((a, b) => b.score - a.score);
@@ -812,21 +646,15 @@ function preprocessImage(fileOrBlob) {
     img.onload = () => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      canvas.width = img.width;
-      canvas.height = img.height;
-
+      canvas.width = img.width; canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
       const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const d = imgData.data;
-
       for (let i = 0; i < d.length; i += 4) {
         const avg = (d[i] + d[i + 1] + d[i + 2]) / 3;
         const v = avg > 120 ? Math.min(255, avg * 1.2) : Math.max(0, avg * 0.8);
-        d[i] = v;
-        d[i + 1] = v;
-        d[i + 2] = v;
+        d[i] = d[i + 1] = d[i + 2] = v;
       }
-
       ctx.putImageData(imgData, 0, 0);
       canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.9);
     };
@@ -835,23 +663,16 @@ function preprocessImage(fileOrBlob) {
   });
 }
 
-// ============================================================
-// MODAL SELEZIONE AREA RITAGLIO
-// ============================================================
+// Modal Crop
 let cropImg = new Image();
-let cropStartX = 0, cropStartY = 0, cropEndX = 0, cropEndY = 0;
-let isSelecting = false;
+let cropStartX = 0, cropStartY = 0, cropEndX = 0, cropEndY = 0, isSelecting = false;
 
-cropBtn.addEventListener("click", (e) => {
-  e.preventDefault();
-  if (!pendingFile && !previewImg.src) return;
-
+cropBtn.addEventListener("click", () => {
+  if (!previewImg.src) return;
   cropModal.classList.add("active");
-
   cropImg = new Image();
   cropImg.onload = () => {
-    cropCanvas.width = cropImg.width;
-    cropCanvas.height = cropImg.height;
+    cropCanvas.width = cropImg.width; cropCanvas.height = cropImg.height;
     cropStartX = cropStartY = cropEndX = cropEndY = 0;
     drawCropCanvas();
   };
@@ -861,13 +682,10 @@ cropBtn.addEventListener("click", (e) => {
 function drawCropCanvas() {
   const ctx = cropCanvas.getContext("2d");
   ctx.drawImage(cropImg, 0, 0);
-
   if (cropStartX !== cropEndX || cropStartY !== cropEndY) {
-    ctx.strokeStyle = "#e8a33d";
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = "#e8a33d"; ctx.lineWidth = 4;
     ctx.fillStyle = "rgba(232, 163, 61, 0.2)";
-    const w = cropEndX - cropStartX;
-    const h = cropEndY - cropStartY;
+    const w = cropEndX - cropStartX, h = cropEndY - cropStartY;
     ctx.fillRect(cropStartX, cropStartY, w, h);
     ctx.strokeRect(cropStartX, cropStartY, w, h);
   }
@@ -875,94 +693,46 @@ function drawCropCanvas() {
 
 function getCanvasCoords(e) {
   const rect = cropCanvas.getBoundingClientRect();
-  const scaleX = cropCanvas.width / rect.width;
-  const scaleY = cropCanvas.height / rect.height;
+  const scaleX = cropCanvas.width / rect.width, scaleY = cropCanvas.height / rect.height;
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
   const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-  return {
-    x: (clientX - rect.left) * scaleX,
-    y: (clientY - rect.top) * scaleY
-  };
+  return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
 }
 
-cropCanvas.addEventListener("mousedown", (e) => {
-  const pos = getCanvasCoords(e);
-  cropStartX = cropEndX = pos.x;
-  cropStartY = cropEndY = pos.y;
-  isSelecting = true;
-});
-
-cropCanvas.addEventListener("mousemove", (e) => {
-  if (!isSelecting) return;
-  const pos = getCanvasCoords(e);
-  cropEndX = pos.x;
-  cropEndY = pos.y;
-  drawCropCanvas();
-});
-
+cropCanvas.addEventListener("mousedown", (e) => { const p = getCanvasCoords(e); cropStartX = cropEndX = p.x; cropStartY = cropEndY = p.y; isSelecting = true; });
+cropCanvas.addEventListener("mousemove", (e) => { if (!isSelecting) return; const p = getCanvasCoords(e); cropEndX = p.x; cropEndY = p.y; drawCropCanvas(); });
 cropCanvas.addEventListener("mouseup", () => { isSelecting = false; });
-cropCanvas.addEventListener("touchstart", (e) => {
-  const pos = getCanvasCoords(e);
-  cropStartX = cropEndX = pos.x;
-  cropStartY = cropEndY = pos.y;
-  isSelecting = true;
-});
-cropCanvas.addEventListener("touchmove", (e) => {
-  if (!isSelecting) return;
-  const pos = getCanvasCoords(e);
-  cropEndX = pos.x;
-  cropEndY = pos.y;
-  drawCropCanvas();
-});
+cropCanvas.addEventListener("touchstart", (e) => { const p = getCanvasCoords(e); cropStartX = cropEndX = p.x; cropStartY = cropEndY = p.y; isSelecting = true; });
+cropCanvas.addEventListener("touchmove", (e) => { if (!isSelecting) return; const p = getCanvasCoords(e); cropEndX = p.x; cropEndY = p.y; drawCropCanvas(); });
 cropCanvas.addEventListener("touchend", () => { isSelecting = false; });
 
-cropCancelBtn.addEventListener("click", () => {
-  cropModal.classList.remove("active");
-});
-
+cropCancelBtn.addEventListener("click", () => cropModal.classList.remove("active"));
 cropConfirmBtn.addEventListener("click", () => {
   cropModal.classList.remove("active");
-
-  const x = Math.min(cropStartX, cropEndX);
-  const y = Math.min(cropStartY, cropEndY);
-  const w = Math.abs(cropEndX - cropStartX);
-  const h = Math.abs(cropEndY - cropStartY);
-
+  const x = Math.min(cropStartX, cropEndX), y = Math.min(cropStartY, cropEndY);
+  const w = Math.abs(cropEndX - cropStartX), h = Math.abs(cropEndY - cropStartY);
   if (w < 10 || h < 10) return;
-
   const cutCanvas = document.createElement("canvas");
-  cutCanvas.width = w;
-  cutCanvas.height = h;
-  const cutCtx = cutCanvas.getContext("2d");
-  cutCtx.drawImage(cropImg, x, y, w, h, 0, 0, w, h);
-
-  cutCanvas.toBlob((blob) => {
-    if (blob) processAndIdentify(blob);
-  }, "image/jpeg");
+  cutCanvas.width = w; cutCanvas.height = h;
+  cutCanvas.getContext("2d").drawImage(cropImg, x, y, w, h, 0, 0, w, h);
+  cutCanvas.toBlob((blob) => { if (blob) processAndIdentify(blob); }, "image/jpeg");
 });
 
 manualTitle.addEventListener("input", checkReadyToAnalyze);
-
 function checkReadyToAnalyze() {
-  const hasTitle = manualTitle.value.trim().length > 0;
-  const hasFileOrCover = pendingFile !== null || editingCoverUrl !== null;
-  analyzeBtn.disabled = !(hasTitle && hasFileOrCover);
+  analyzeBtn.disabled = !(manualTitle.value.trim().length > 0 && (pendingFile !== null || editingCoverUrl !== null));
 }
 
-// ============================================================
-// 2. TMDB
-// ============================================================
+// TMDB Search
 analyzeBtn.addEventListener("click", async () => {
   const titleToSearch = manualTitle.value.trim();
   if (!titleToSearch) return;
 
-  setStatus(analyzeStatus, "Ricerca dettagli in rete...", null);
+  setStatus(analyzeStatus, "Ricerca online in corso...", null);
   analyzeBtn.disabled = true;
 
   try {
     const details = await searchTMDB(titleToSearch);
-
     fTitle.value = details.tmdbTitle || titleToSearch;
     fYear.value = details.year || fYear.value || "";
     fDuration.value = details.duration || fDuration.value || "";
@@ -971,15 +741,10 @@ analyzeBtn.addEventListener("click", async () => {
     fPlot.value = details.plot || fPlot.value || "";
 
     reviewForm.hidden = false;
-    
-    if (details.tmdbTitle) {
-      setStatus(analyzeStatus, "Informazioni recuperate con successo!", "ok");
-    } else {
-      setStatus(analyzeStatus, "Nessun dettaglio trovato online. Puoi inserirli a mano.", "error");
-    }
+    setStatus(analyzeStatus, details.tmdbTitle ? "Dati trovati!" : "Nessun dato online trovato.", details.tmdbTitle ? "ok" : "error");
   } catch (err) {
     console.error(err);
-    setStatus(analyzeStatus, "Errore nella ricerca online. Puoi compilare i dati a mano.", "error");
+    setStatus(analyzeStatus, "Errore nella ricerca online.", "error");
     fTitle.value = titleToSearch;
     reviewForm.hidden = false;
   } finally {
@@ -991,14 +756,12 @@ async function searchTMDB(title) {
   const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${CONFIG.TMDB_API_KEY}&language=${CONFIG.TMDB_LANGUAGE}&query=${encodeURIComponent(title)}`;
   const searchRes = await fetch(searchUrl);
   const searchData = await searchRes.json();
-
   const best = searchData.results && searchData.results[0];
   if (!best) return {};
 
   const detailsUrl = `https://api.themoviedb.org/3/movie/${best.id}?api_key=${CONFIG.TMDB_API_KEY}&language=${CONFIG.TMDB_LANGUAGE}&append_to_response=credits`;
   const detailsRes = await fetch(detailsUrl);
   const details = await detailsRes.json();
-
   const director = (details.credits?.crew || []).find((c) => c.job === "Director");
 
   return {
@@ -1011,21 +774,18 @@ async function searchTMDB(title) {
   };
 }
 
-// ============================================================
-// 3. Salvataggio / Modifica
-// ============================================================
+// Salvataggio / Modifica
 saveBtn.addEventListener("click", async () => {
   if (!fTitle.value.trim()) {
-    setStatus(saveStatus, "Inserisci almeno il titolo.", "error");
+    setStatus(saveStatus, "Inserisci un titolo valido.", "error");
     return;
   }
 
   saveBtn.disabled = true;
-  setStatus(saveStatus, "Salvataggio in corso...", null);
+  setStatus(saveStatus, "Salvataggio...", null);
 
   try {
     let coverUrl = editingCoverUrl;
-    
     if (pendingFile) {
       coverUrl = await uploadCover(pendingFile);
     }
@@ -1043,33 +803,35 @@ saveBtn.addEventListener("click", async () => {
     };
 
     if (editingMovieId) {
-      const { error } = await supabaseClient
-        .from("movies")
-        .update(payload)
-        .eq("id", editingMovieId);
-
+      const { error } = await supabaseClient.from("movies").update(payload).eq("id", editingMovieId);
       if (error) throw error;
-      setStatus(saveStatus, "Film modificato con successo.", "ok");
+      setStatus(saveStatus, "Modificato con successo.", "ok");
     } else {
       const { error } = await supabaseClient.from("movies").insert(payload);
       if (error) throw error;
       setStatus(saveStatus, "Aggiunto allo scaffale.", "ok");
     }
 
-    resetAddPanel();
+    setTimeout(() => {
+      resetAddPanel();
+      addPanel.classList.remove("open");
+    }, 800);
+
     await loadMovies();
   } catch (err) {
     console.error(err);
-    setStatus(saveStatus, "Salvataggio non riuscito. Riprova.", "error");
+    setStatus(saveStatus, "Errore durante il salvataggio.", "error");
   } finally {
     saveBtn.disabled = false;
   }
 });
 
-cancelBtn.addEventListener("click", resetAddPanel);
+cancelBtn.addEventListener("click", () => {
+  resetAddPanel();
+  addPanel.classList.remove("open");
+});
 
 async function uploadCover(file) {
-  if (!file) return null;
   const path = `${crypto.randomUUID()}-${file.name}`;
   const { error } = await supabaseClient.storage.from("covers").upload(path, file);
   if (error) throw error;
@@ -1083,8 +845,7 @@ function resetAddPanel() {
   editingCoverUrl = null;
 
   stubModeLabel.textContent = "Nuovo";
-  saveBtn.textContent = "Aggiungi allo scaffale";
-  cancelBtn.hidden = true;
+  saveBtn.textContent = "Aggiungi";
   cropBtn.style.display = "none";
 
   coverInput.value = "";
@@ -1108,7 +869,6 @@ function startEditingMovie(movie) {
 
   stubModeLabel.textContent = "Modifica";
   saveBtn.textContent = "Salva Modifiche";
-  cancelBtn.hidden = false;
 
   if (movie.cover_url) {
     previewImg.src = movie.cover_url;
@@ -1132,34 +892,26 @@ function startEditingMovie(movie) {
   reviewForm.hidden = false;
   checkReadyToAnalyze();
 
-  document.getElementById("add-panel").scrollIntoView({ behavior: "smooth" });
+  addPanel.classList.add("open");
+  searchPanel.classList.remove("open");
+  addPanel.scrollIntoView({ behavior: "smooth" });
 }
 
 async function deleteMovie(movie) {
-  if (!confirm(`Sei sicuro di voler eliminare "${movie.title}" dallo scaffale?`)) return;
+  if (!confirm(`Vuoi davvero eliminare "${movie.title}"?`)) return;
 
   try {
-    const { error } = await supabaseClient
-      .from("movies")
-      .delete()
-      .eq("id", movie.id);
-
+    const { error } = await supabaseClient.from("movies").delete().eq("id", movie.id);
     if (error) throw error;
-
-    if (editingMovieId === movie.id) {
-      resetAddPanel();
-    }
-
+    if (editingMovieId === movie.id) resetAddPanel();
     await loadMovies();
   } catch (err) {
     console.error(err);
-    alert("Errore durante l'eliminazione del film.");
+    alert("Errore durante l'eliminazione.");
   }
 }
 
-// ============================================================
-// 4. Scaffale & Modale Dettagli
-// ============================================================
+// Scaffale, Filtri e Paginazione
 async function loadMovies() {
   const { data, error } = await supabaseClient
     .from("movies")
@@ -1179,7 +931,7 @@ function applyFiltersAndRender() {
   const query = searchText.value.toLowerCase().trim();
   const selectedType = filterType.value;
 
-  const filtered = allMovies.filter((movie) => {
+  filteredMovies = allMovies.filter((movie) => {
     const matchesType = selectedType === "all" || movie.media_type === selectedType;
     const titleMatch = (movie.title || "").toLowerCase().includes(query);
     const genresMatch = Array.isArray(movie.genres) 
@@ -1189,17 +941,55 @@ function applyFiltersAndRender() {
     return matchesType && (query === "" || titleMatch || genresMatch);
   });
 
-  renderShelf(filtered);
+  currentPage = 1;
+  renderCurrentPage();
 }
 
-function renderShelf(movies) {
+function renderCurrentPage() {
   shelfGrid.innerHTML = "";
-  shelfEmpty.hidden = movies.length > 0;
+  const total = filteredMovies.length;
+  movieCount.textContent = `${total} ${total === 1 ? 'film' : 'film'}`;
 
-  movies.forEach((movie) => {
+  if (total === 0) {
+    shelfEmpty.hidden = false;
+    paginationControls.hidden = true;
+    return;
+  }
+
+  shelfEmpty.hidden = true;
+  const totalPages = Math.ceil(total / CONFIG.ITEMS_PER_PAGE);
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const startIdx = (currentPage - 1) * CONFIG.ITEMS_PER_PAGE;
+  const pageMovies = filteredMovies.slice(startIdx, startIdx + CONFIG.ITEMS_PER_PAGE);
+
+  pageMovies.forEach((movie) => {
     shelfGrid.appendChild(renderMovieCard(movie));
   });
+
+  // Aggiorna controlli paginazione
+  paginationControls.hidden = totalPages <= 1;
+  paginationInfo.textContent = `Pagina ${currentPage} di ${totalPages}`;
+  prevPageBtn.disabled = currentPage === 1;
+  nextPageBtn.disabled = currentPage === totalPages;
 }
+
+prevPageBtn.addEventListener("click", () => {
+  if (currentPage > 1) {
+    currentPage--;
+    renderCurrentPage();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
+
+nextPageBtn.addEventListener("click", () => {
+  const totalPages = Math.ceil(filteredMovies.length / CONFIG.ITEMS_PER_PAGE);
+  if (currentPage < totalPages) {
+    currentPage++;
+    renderCurrentPage();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+});
 
 function renderMovieCard(movie) {
   const card = document.createElement("div");
@@ -1222,55 +1012,37 @@ function renderMovieCard(movie) {
       <div class="movie-meta">
         <span class="badge ${badgeClass}">${movie.media_type}</span>
         <span>${movie.release_year || "—"}</span>
-        <span>${movie.duration_minutes ? movie.duration_minutes + " min" : ""}</span>
+        <span>${movie.duration_minutes ? movie.duration_minutes + "m" : ""}</span>
       </div>
       <div class="stars" data-id="${movie.id}"></div>
     </div>
   `;
 
-  // Apri il modale dettagli cliccando sulla locandina
   card.querySelector(".movie-cover").addEventListener("click", () => openDetailModal(movie));
   card.querySelector(".btn-edit").addEventListener("click", () => startEditingMovie(movie));
   card.querySelector(".btn-delete").addEventListener("click", () => deleteMovie(movie));
 
-  const starsBox = card.querySelector(".stars");
-  renderStars(starsBox, movie.rating || 0, movie.id);
-
+  renderStars(card.querySelector(".stars"), movie.rating || 0, movie.id);
   return card;
 }
 
 function openDetailModal(movie) {
   dCover.src = movie.cover_url || "";
   dTitle.textContent = movie.title || "Senza titolo";
-  
   dBadge.textContent = movie.media_type || "DVD";
   dBadge.className = "badge " + (movie.media_type === "DVD" ? "badge-dvd" : "badge-bluray");
-  
-  dYear.textContent = movie.release_year ? movie.release_year : "";
+  dYear.textContent = movie.release_year || "";
   dDuration.textContent = movie.duration_minutes ? `${movie.duration_minutes} min` : "";
-  
-  const ratingStars = movie.rating ? "★".repeat(movie.rating) + "☆".repeat(5 - movie.rating) : "Nessun voto";
-  dRating.textContent = ratingStars;
-
-  dGenres.textContent = Array.isArray(movie.genres) && movie.genres.length > 0 
-    ? movie.genres.join(" • ") 
-    : "";
-    
+  dRating.textContent = movie.rating ? "★".repeat(movie.rating) + "☆".repeat(5 - movie.rating) : "Nessun voto";
+  dGenres.textContent = Array.isArray(movie.genres) ? movie.genres.join(" • ") : "";
   dDirector.textContent = movie.director ? `Regia: ${movie.director}` : "";
   dPlot.textContent = movie.plot || "Nessuna trama disponibile.";
 
   detailModal.classList.add("active");
 }
 
-detailCloseBtn.addEventListener("click", () => {
-  detailModal.classList.remove("active");
-});
-
-detailModal.addEventListener("click", (e) => {
-  if (e.target === detailModal) {
-    detailModal.classList.remove("active");
-  }
-});
+detailCloseBtn.addEventListener("click", () => detailModal.classList.remove("active"));
+detailModal.addEventListener("click", (e) => { if (e.target === detailModal) detailModal.classList.remove("active"); });
 
 function renderStars(container, currentRating, movieId) {
   container.innerHTML = "";
@@ -1278,7 +1050,6 @@ function renderStars(container, currentRating, movieId) {
     const btn = document.createElement("button");
     btn.textContent = "★";
     btn.className = i <= currentRating ? "filled" : "";
-    btn.setAttribute("aria-label", `Vota ${i} stelle`);
     btn.addEventListener("click", () => setRating(movieId, i, container));
     container.appendChild(btn);
   }
@@ -1286,14 +1057,9 @@ function renderStars(container, currentRating, movieId) {
 
 async function setRating(movieId, rating, container) {
   const { error } = await supabaseClient.from("movies").update({ rating }).eq("id", movieId);
-  if (error) {
-    console.error(error);
-    return;
-  }
-  
+  if (error) return;
   const target = allMovies.find(m => m.id === movieId);
   if (target) target.rating = rating;
-
   renderStars(container, rating, movieId);
 }
 
