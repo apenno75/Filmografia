@@ -406,6 +406,8 @@ h1, h2, h3 {
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Tesseract.js: OCR che gira interamente nel browser, gratuito e senza chiavi API -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 // ============================================================
 // CONFIGURAZIONE — sostituisci questi valori con i tuoi
@@ -418,12 +420,12 @@ const CONFIG = {
   SUPABASE_URL: "https://erukzvrtjnvyzjvfuirn.supabase.co",
   SUPABASE_KEY: "sb_publishable_FDhQ03affjzeyhCHuoKulg_Rp7PdyLM",
 
-  // La funzione edge che riconosce titolo/tipo dalla copertina.
-  // Va deployata separatamente su Supabase (vedi index.ts): non può stare
-  // in questo file perché deve girare lato server, dove la chiave Anthropic
-  // resta nascosta. L'URL corretto ha SEMPRE il dominio *.supabase.co,
-  // non un dominio come github.io.
-  IDENTIFY_FUNCTION_URL: "https://erukzvrtjnvyzjvfuirn.supabase.co/functions/v1/identify-cover",
+  // Nessuna chiave di riconoscimento immagini necessaria: il testo sulla
+  // copertina viene letto con Tesseract.js, una libreria OCR gratuita che
+  // gira interamente nel browser (nessun account, nessuna chiave, nessun costo).
+  // Le lingue usate per l'OCR (italiano + inglese, coprono la maggior parte
+  // delle copertine DVD/Blu-ray in Italia).
+  OCR_LANGUAGES: "ita+eng",
 
   // Chiave gratuita da themoviedb.org (Impostazioni > API)
   TMDB_API_KEY: "2c669816245012266d15d06607d3d413",
@@ -438,7 +440,6 @@ const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABA
 
 // Stato della copertina in fase di analisi, prima del salvataggio
 let pendingFile = null;
-let pendingBase64 = null;
 
 // ---------- Riferimenti agli elementi ----------
 const coverInput = document.getElementById("cover-input");
@@ -476,37 +477,26 @@ coverInput.addEventListener("change", async (e) => {
   analyzeBtn.disabled = false;
   analyzeStatus.textContent = "";
   reviewForm.hidden = true;
-
-  pendingBase64 = await fileToBase64(file);
 });
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(",")[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 // ============================================================
 // 2. Riconoscimento automatico (copertina -> titolo + tipo)
 //    poi arricchimento dati (TMDB -> anno, durata, trama, genere, regia)
 // ============================================================
 analyzeBtn.addEventListener("click", async () => {
-  if (!pendingFile || !pendingBase64) return;
+  if (!pendingFile) return;
 
-  setStatus(analyzeStatus, "Lettura della copertina in corso...", null);
+  setStatus(analyzeStatus, "Lettura del testo sulla copertina (0%)...", null);
   analyzeBtn.disabled = true;
 
   try {
-    const guess = await identifyCover(pendingBase64, pendingFile.type);
+    const guess = await identifyCover(pendingFile);
 
     if (!guess.title) {
-      throw new Error("La funzione di riconoscimento non ha restituito un titolo.");
+      throw new Error("Non ho trovato testo leggibile sulla copertina.");
     }
 
-    setStatus(analyzeStatus, `Titolo riconosciuto: "${guess.title}". Ricerco i dettagli...`, null);
+    setStatus(analyzeStatus, `Testo letto: "${guess.title}". Ricerco i dettagli...`, null);
 
     const details = await searchTMDB(guess.title);
 
@@ -531,29 +521,49 @@ analyzeBtn.addEventListener("click", async () => {
   }
 });
 
-// Chiama la funzione edge Supabase che usa un modello con visione per leggere la copertina
-async function identifyCover(base64, mimeType) {
-  const response = await fetch(CONFIG.IDENTIFY_FUNCTION_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": CONFIG.SUPABASE_KEY,
-      "Authorization": `Bearer ${CONFIG.SUPABASE_KEY}`,
+// Legge il testo stampato sulla copertina con Tesseract.js (OCR nel browser,
+// gratuito, nessuna chiave API) e ne ricava un titolo e un tipo di supporto
+// probabili. Non è un riconoscimento "intelligente" come un modello con
+// visione: legge lettere, non capisce loghi o grafica, quindi funziona meglio
+// con copertine dal titolo scritto a caratteri stampati ben leggibili, e può
+// sbagliare con font molto stilizzati: per questo il form di correzione resta
+// sempre aperto dopo l'analisi.
+async function identifyCover(file) {
+  const { data } = await Tesseract.recognize(file, CONFIG.OCR_LANGUAGES, {
+    logger: (m) => {
+      if (m.status === "recognizing text" && typeof m.progress === "number") {
+        setStatus(analyzeStatus, `Lettura del testo sulla copertina (${Math.round(m.progress * 100)}%)...`, null);
+      }
     },
-    body: JSON.stringify({ imageBase64: base64, mediaType: mimeType }),
   });
 
-  const data = await response.json().catch(() => null);
+  return guessFromOcrText(data.text || "");
+}
 
-  if (!response.ok) {
-    const message = data && data.error ? data.error : `Errore ${response.status} nella funzione di riconoscimento`;
-    throw new Error(message);
-  }
-  if (!data) {
-    throw new Error("Risposta non valida dalla funzione di riconoscimento");
+// Euristica semplice: tra le prime righe di testo riconosciuto, il titolo
+// è di solito la scritta più lunga (le copertine hanno spesso il titolo
+// grande in alto); il tipo di supporto si deduce cercando parole chiave.
+function guessFromOcrText(rawText) {
+  const lines = rawText
+    .split("\n")
+    .map((l) => l.replace(/[^\p{L}\p{N}\s:'’\-]/gu, " ").replace(/\s+/g, " ").trim())
+    .filter((l) => l.length >= 2);
+
+  let title = "";
+  if (lines.length) {
+    const candidates = lines.slice(0, 8);
+    title = candidates.reduce((best, l) => (l.length > best.length ? l : best), candidates[0]);
   }
 
-  return data; // { title, media_type_guess, language }
+  const lower = rawText.toLowerCase();
+  let media_type_guess = "DVD";
+  if (lower.includes("4k") || lower.includes("ultra hd")) {
+    media_type_guess = "Blu-ray 4K";
+  } else if (lower.includes("blu-ray") || lower.includes("bluray") || lower.includes("blu ray")) {
+    media_type_guess = "Blu-ray";
+  }
+
+  return { title, media_type_guess };
 }
 
 function normalizeMediaType(guess) {
