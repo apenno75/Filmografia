@@ -156,6 +156,7 @@ h1, h2, h3 {
   font-weight: 600;
   cursor: pointer;
   font-family: 'Inter', sans-serif;
+  text-align: center;
 }
 .btn-primary {
   background: var(--amber);
@@ -300,6 +301,11 @@ h1, h2, h3 {
   object-fit: cover;
   background: #14161e;
   display: block;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.movie-cover:hover {
+  opacity: 0.85;
 }
 .movie-info {
   padding: 0.7rem 0.8rem 0.9rem;
@@ -358,6 +364,136 @@ h1, h2, h3 {
 }
 .stars button.filled { color: var(--amber); }
 
+/* Modali Generici */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal-box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+/* Modal Ritaglio */
+.crop-container {
+  overflow: auto;
+  max-height: 60vh;
+  position: relative;
+  touch-action: none;
+}
+.crop-container canvas {
+  display: block;
+  max-width: 100%;
+  cursor: crosshair;
+}
+
+/* Modal Dettaglio Film A Tutto Schermo */
+.detail-modal-box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 850px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.detail-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.2rem;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.detail-close-btn:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 2rem;
+}
+.detail-cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: #14161e;
+}
+.detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.detail-title {
+  font-size: 2.2rem;
+  line-height: 1.1;
+  color: var(--amber);
+}
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.detail-rating {
+  font-size: 1.2rem;
+  color: var(--amber);
+}
+.detail-genres {
+  font-size: 0.9rem;
+  color: var(--teal);
+  font-weight: 600;
+}
+.detail-director {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+.detail-plot-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  color: var(--text);
+}
+.detail-plot {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 640px) {
   .ticket { grid-template-columns: 1fr; }
   .ticket-stub { border-right: none; border-bottom: 2px dashed var(--line); }
@@ -366,6 +502,8 @@ h1, h2, h3 {
   .shelf-header { flex-direction: column; align-items: flex-start; }
   .shelf-controls { width: 100%; }
   .shelf-controls input, .shelf-controls select { flex: 1; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-cover { max-width: 200px; margin: 0 auto; }
 }
 </style>
 </head>
@@ -392,6 +530,7 @@ h1, h2, h3 {
       </div>
       <label class="btn btn-outline" for="cover-input">Scegli copertina</label>
       <input type="file" id="cover-input" accept="image/*" capture="environment" hidden>
+      <button id="crop-btn" type="button" class="btn btn-outline" style="font-size:0.8rem; padding:0.4rem 0.6rem; width:100%; display:none;">✂️ Seleziona area titolo</button>
     </div>
 
     <div class="ticket-body">
@@ -479,6 +618,43 @@ h1, h2, h3 {
 
 </main>
 
+<!-- Modal Ritaglio Area Titolo -->
+<div id="crop-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 style="margin:0; font-family:'Inter'; font-size:1rem;">Traccia un rettangolo attorno al titolo:</h3>
+    <div class="crop-container">
+      <canvas id="crop-canvas"></canvas>
+    </div>
+    <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
+      <button id="crop-cancel-btn" type="button" class="btn btn-outline">Annulla</button>
+      <button id="crop-confirm-btn" type="button" class="btn btn-primary">Leggi Titolo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Scheda Dettaglio Film -->
+<div id="detail-modal" class="modal-overlay">
+  <div class="detail-modal-box">
+    <button id="detail-close-btn" class="detail-close-btn" title="Chiudi">✕</button>
+    <div class="detail-grid">
+      <img id="d-cover" class="detail-cover" src="" alt="Copertina film">
+      <div class="detail-info">
+        <h2 id="d-title" class="detail-title"></h2>
+        <div class="detail-meta">
+          <span id="d-badge" class="badge"></span>
+          <span id="d-year"></span>
+          <span id="d-duration"></span>
+          <span id="d-rating" class="detail-rating"></span>
+        </div>
+        <div id="d-genres" class="detail-genres"></div>
+        <div id="d-director" class="detail-director"></div>
+        <div class="detail-plot-title">Trama</div>
+        <div id="d-plot" class="detail-plot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -492,18 +668,16 @@ const CONFIG = {
   TMDB_LANGUAGE: "it-IT",
 };
 
-// Inizializzazione client Supabase
 const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 
-// Stato dell'applicazione
 let pendingFile = null;
-let editingMovieId = null; // Memorizza l'ID del film se siamo in modalità modifica
-let editingCoverUrl = null; // Memorizza l'URL esistente della copertina
-let allMovies = []; // Memorizza la lista dei film in locale per la ricerca
+let editingMovieId = null;
+let editingCoverUrl = null;
+let allMovies = [];
 
-// ---------- Riferimenti agli elementi DOM ----------
 const stubModeLabel = document.getElementById("stub-mode-label");
 const coverInput = document.getElementById("cover-input");
+const cropBtn = document.getElementById("crop-btn");
 const previewImg = document.getElementById("preview-img");
 const previewPlaceholder = document.getElementById("preview-placeholder");
 
@@ -530,8 +704,26 @@ const filterType = document.getElementById("filter-type");
 const shelfGrid = document.getElementById("shelf-grid");
 const shelfEmpty = document.getElementById("shelf-empty");
 
+const cropModal = document.getElementById("crop-modal");
+const cropCanvas = document.getElementById("crop-canvas");
+const cropCancelBtn = document.getElementById("crop-cancel-btn");
+const cropConfirmBtn = document.getElementById("crop-confirm-btn");
+
+// Modale Dettagli
+const detailModal = document.getElementById("detail-modal");
+const detailCloseBtn = document.getElementById("detail-close-btn");
+const dCover = document.getElementById("d-cover");
+const dTitle = document.getElementById("d-title");
+const dBadge = document.getElementById("d-badge");
+const dYear = document.getElementById("d-year");
+const dDuration = document.getElementById("d-duration");
+const dRating = document.getElementById("d-rating");
+const dGenres = document.getElementById("d-genres");
+const dDirector = document.getElementById("d-director");
+const dPlot = document.getElementById("d-plot");
+
 // ============================================================
-// 1. Caricamento copertina & Lettura automatica OCR
+// 1. Caricamento copertina & OCR
 // ============================================================
 coverInput.addEventListener("change", async (e) => {
   const file = e.target.files[0];
@@ -541,20 +733,25 @@ coverInput.addEventListener("change", async (e) => {
   previewImg.src = URL.createObjectURL(file);
   previewImg.hidden = false;
   previewPlaceholder.hidden = true;
+  cropBtn.style.display = "block";
 
   manualTitle.disabled = false;
   manualTitle.value = "";
   reviewForm.hidden = true;
 
+  processAndIdentify(file);
+});
+
+async function processAndIdentify(imageBlob) {
   setStatus(analyzeStatus, "Lettura automatica del titolo in corso...", null);
 
   try {
-    const detectedTitle = await identifyCover(file);
+    const detectedTitle = await identifyCover(imageBlob);
     if (detectedTitle) {
       manualTitle.value = detectedTitle;
       setStatus(analyzeStatus, "Titolo letto! Modificalo se errato, poi premi 'Analizza e cerca dati'.", "ok");
     } else {
-      setStatus(analyzeStatus, "Impossibile leggere il titolo. Inseriscilo a mano.", "error");
+      setStatus(analyzeStatus, "Impossibile leggere il titolo. Inseriscilo a mano o usa 'Seleziona area titolo'.", "error");
     }
   } catch (err) {
     console.error(err);
@@ -562,27 +759,188 @@ coverInput.addEventListener("change", async (e) => {
   } finally {
     checkReadyToAnalyze();
   }
-});
+}
 
-async function identifyCover(file) {
-  const { data } = await Tesseract.recognize(file, "eng", {
+async function identifyCover(fileOrBlob) {
+  const processedBlob = await preprocessImage(fileOrBlob);
+
+  const { data } = await Tesseract.recognize(processedBlob || fileOrBlob, "ita+eng", {
     logger: (m) => {
       if (m.status === "recognizing text" && typeof m.progress === "number") {
-        setStatus(analyzeStatus, `Lettura titolo (${Math.round(m.progress * 100)}%)...`, null);
+        setStatus(analyzeStatus, `Lettura avanzata titolo (${Math.round(m.progress * 100)}%)...`, null);
       }
     }
   });
 
-  const lines = (data.text || "")
-    .split("\n")
-    .map((l) => l.replace(/[^\p{L}\p{N}\s:'’\-]/gu, " ").replace(/\s+/g, " ").trim())
-    .filter((l) => l.length >= 2);
+  if (!data || !data.lines || data.lines.length === 0) return "";
 
-  if (!lines.length) return "";
+  const stopWords = [
+    "dvd", "bluray", "blu-ray", "4k", "ultrahd", "special edition", 
+    "edizione speciale", "un film di", "vincitore di", "collezione", 
+    "cinema", "disney", "universal", "warner", "paramount", "sony",
+    "must have", "versione integrale", "film", "video"
+  ];
 
-  const candidates = lines.slice(0, 8);
-  return candidates.reduce((best, l) => (l.length > best.length ? l : best), candidates[0]);
+  const scoredLines = data.lines.map((line) => {
+    const rawText = line.text.replace(/[^\p{L}\p{N}\s:'’\-]/gu, " ").replace(/\s+/g, " ").trim();
+    if (rawText.length < 2) return { text: "", score: 0 };
+
+    const lowerText = rawText.toLowerCase();
+    if (stopWords.some((sw) => lowerText.includes(sw))) {
+      return { text: rawText, score: 0 };
+    }
+
+    const bbox = line.bbox;
+    const fontHeight = bbox ? (bbox.y1 - bbox.y0) : 10;
+    let score = fontHeight * Math.log2(rawText.length + 1);
+
+    const lineCenterY = bbox ? (bbox.y0 + bbox.y1) / 2 : 0;
+    if (lineCenterY > 0) {
+      score *= 1.2; 
+    }
+
+    return { text: rawText, score };
+  });
+
+  scoredLines.sort((a, b) => b.score - a.score);
+  return scoredLines[0]?.score > 0 ? scoredLines[0].text : "";
 }
+
+function preprocessImage(fileOrBlob) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imgData.data;
+
+      for (let i = 0; i < d.length; i += 4) {
+        const avg = (d[i] + d[i + 1] + d[i + 2]) / 3;
+        const v = avg > 120 ? Math.min(255, avg * 1.2) : Math.max(0, avg * 0.8);
+        d[i] = v;
+        d[i + 1] = v;
+        d[i + 2] = v;
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+      canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.9);
+    };
+    img.onerror = () => resolve(null);
+    img.src = URL.createObjectURL(fileOrBlob);
+  });
+}
+
+// ============================================================
+// MODAL SELEZIONE AREA RITAGLIO
+// ============================================================
+let cropImg = new Image();
+let cropStartX = 0, cropStartY = 0, cropEndX = 0, cropEndY = 0;
+let isSelecting = false;
+
+cropBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  if (!pendingFile && !previewImg.src) return;
+
+  cropModal.classList.add("active");
+
+  cropImg = new Image();
+  cropImg.onload = () => {
+    cropCanvas.width = cropImg.width;
+    cropCanvas.height = cropImg.height;
+    cropStartX = cropStartY = cropEndX = cropEndY = 0;
+    drawCropCanvas();
+  };
+  cropImg.src = previewImg.src;
+});
+
+function drawCropCanvas() {
+  const ctx = cropCanvas.getContext("2d");
+  ctx.drawImage(cropImg, 0, 0);
+
+  if (cropStartX !== cropEndX || cropStartY !== cropEndY) {
+    ctx.strokeStyle = "#e8a33d";
+    ctx.lineWidth = 4;
+    ctx.fillStyle = "rgba(232, 163, 61, 0.2)";
+    const w = cropEndX - cropStartX;
+    const h = cropEndY - cropStartY;
+    ctx.fillRect(cropStartX, cropStartY, w, h);
+    ctx.strokeRect(cropStartX, cropStartY, w, h);
+  }
+}
+
+function getCanvasCoords(e) {
+  const rect = cropCanvas.getBoundingClientRect();
+  const scaleX = cropCanvas.width / rect.width;
+  const scaleY = cropCanvas.height / rect.height;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY
+  };
+}
+
+cropCanvas.addEventListener("mousedown", (e) => {
+  const pos = getCanvasCoords(e);
+  cropStartX = cropEndX = pos.x;
+  cropStartY = cropEndY = pos.y;
+  isSelecting = true;
+});
+
+cropCanvas.addEventListener("mousemove", (e) => {
+  if (!isSelecting) return;
+  const pos = getCanvasCoords(e);
+  cropEndX = pos.x;
+  cropEndY = pos.y;
+  drawCropCanvas();
+});
+
+cropCanvas.addEventListener("mouseup", () => { isSelecting = false; });
+cropCanvas.addEventListener("touchstart", (e) => {
+  const pos = getCanvasCoords(e);
+  cropStartX = cropEndX = pos.x;
+  cropStartY = cropEndY = pos.y;
+  isSelecting = true;
+});
+cropCanvas.addEventListener("touchmove", (e) => {
+  if (!isSelecting) return;
+  const pos = getCanvasCoords(e);
+  cropEndX = pos.x;
+  cropEndY = pos.y;
+  drawCropCanvas();
+});
+cropCanvas.addEventListener("touchend", () => { isSelecting = false; });
+
+cropCancelBtn.addEventListener("click", () => {
+  cropModal.classList.remove("active");
+});
+
+cropConfirmBtn.addEventListener("click", () => {
+  cropModal.classList.remove("active");
+
+  const x = Math.min(cropStartX, cropEndX);
+  const y = Math.min(cropStartY, cropEndY);
+  const w = Math.abs(cropEndX - cropStartX);
+  const h = Math.abs(cropEndY - cropStartY);
+
+  if (w < 10 || h < 10) return;
+
+  const cutCanvas = document.createElement("canvas");
+  cutCanvas.width = w;
+  cutCanvas.height = h;
+  const cutCtx = cutCanvas.getContext("2d");
+  cutCtx.drawImage(cropImg, x, y, w, h, 0, 0, w, h);
+
+  cutCanvas.toBlob((blob) => {
+    if (blob) processAndIdentify(blob);
+  }, "image/jpeg");
+});
 
 manualTitle.addEventListener("input", checkReadyToAnalyze);
 
@@ -593,7 +951,7 @@ function checkReadyToAnalyze() {
 }
 
 // ============================================================
-// 2. Ricerca informazioni online su TMDB
+// 2. TMDB
 // ============================================================
 analyzeBtn.addEventListener("click", async () => {
   const titleToSearch = manualTitle.value.trim();
@@ -654,7 +1012,7 @@ async function searchTMDB(title) {
 }
 
 // ============================================================
-// 3. Salvataggio / Modifica nello scaffale
+// 3. Salvataggio / Modifica
 // ============================================================
 saveBtn.addEventListener("click", async () => {
   if (!fTitle.value.trim()) {
@@ -668,7 +1026,6 @@ saveBtn.addEventListener("click", async () => {
   try {
     let coverUrl = editingCoverUrl;
     
-    // Se c'è un nuovo file selezionato, caricatalo
     if (pendingFile) {
       coverUrl = await uploadCover(pendingFile);
     }
@@ -686,7 +1043,6 @@ saveBtn.addEventListener("click", async () => {
     };
 
     if (editingMovieId) {
-      // Modalità Modifica
       const { error } = await supabaseClient
         .from("movies")
         .update(payload)
@@ -695,7 +1051,6 @@ saveBtn.addEventListener("click", async () => {
       if (error) throw error;
       setStatus(saveStatus, "Film modificato con successo.", "ok");
     } else {
-      // Modalità Inserimento
       const { error } = await supabaseClient.from("movies").insert(payload);
       if (error) throw error;
       setStatus(saveStatus, "Aggiunto allo scaffale.", "ok");
@@ -730,6 +1085,7 @@ function resetAddPanel() {
   stubModeLabel.textContent = "Nuovo";
   saveBtn.textContent = "Aggiungi allo scaffale";
   cancelBtn.hidden = true;
+  cropBtn.style.display = "none";
 
   coverInput.value = "";
   manualTitle.value = "";
@@ -746,7 +1102,6 @@ function resetAddPanel() {
   setStatus(saveStatus, "", null);
 }
 
-// Avvia la modifica di un film nello scaffale
 function startEditingMovie(movie) {
   editingMovieId = movie.id;
   editingCoverUrl = movie.cover_url;
@@ -759,6 +1114,7 @@ function startEditingMovie(movie) {
     previewImg.src = movie.cover_url;
     previewImg.hidden = false;
     previewPlaceholder.hidden = true;
+    cropBtn.style.display = "block";
   }
 
   manualTitle.value = movie.title;
@@ -776,12 +1132,11 @@ function startEditingMovie(movie) {
   reviewForm.hidden = false;
   checkReadyToAnalyze();
 
-  // Scorrimento verso il pannello di modifica
   document.getElementById("add-panel").scrollIntoView({ behavior: "smooth" });
 }
 
 // ============================================================
-// 4. Scaffale: ricerca, filtraggio ed elenco
+// 4. Scaffale & Modale Dettagli
 // ============================================================
 async function loadMovies() {
   const { data, error } = await supabaseClient
@@ -803,10 +1158,7 @@ function applyFiltersAndRender() {
   const selectedType = filterType.value;
 
   const filtered = allMovies.filter((movie) => {
-    // Filtro per supporto
     const matchesType = selectedType === "all" || movie.media_type === selectedType;
-
-    // Filtro per titolo e genere
     const titleMatch = (movie.title || "").toLowerCase().includes(query);
     const genresMatch = Array.isArray(movie.genres) 
       ? movie.genres.some((g) => g.toLowerCase().includes(query)) 
@@ -851,15 +1203,48 @@ function renderMovieCard(movie) {
     </div>
   `;
 
-  // Bottone modifica
+  // Apri il modale dettagli cliccando sulla locandina
+  card.querySelector(".movie-cover").addEventListener("click", () => openDetailModal(movie));
   card.querySelector(".btn-edit").addEventListener("click", () => startEditingMovie(movie));
 
-  // Stelle
   const starsBox = card.querySelector(".stars");
   renderStars(starsBox, movie.rating || 0, movie.id);
 
   return card;
 }
+
+function openDetailModal(movie) {
+  dCover.src = movie.cover_url || "";
+  dTitle.textContent = movie.title || "Senza titolo";
+  
+  dBadge.textContent = movie.media_type || "DVD";
+  dBadge.className = "badge " + (movie.media_type === "DVD" ? "badge-dvd" : "badge-bluray");
+  
+  dYear.textContent = movie.release_year ? movie.release_year : "";
+  dDuration.textContent = movie.duration_minutes ? `${movie.duration_minutes} min` : "";
+  
+  const ratingStars = movie.rating ? "★".repeat(movie.rating) + "☆".repeat(5 - movie.rating) : "Nessun voto";
+  dRating.textContent = ratingStars;
+
+  dGenres.textContent = Array.isArray(movie.genres) && movie.genres.length > 0 
+    ? movie.genres.join(" • ") 
+    : "";
+    
+  dDirector.textContent = movie.director ? `Regia: ${movie.director}` : "";
+  dPlot.textContent = movie.plot || "Nessuna trama disponibile.";
+
+  detailModal.classList.add("active");
+}
+
+detailCloseBtn.addEventListener("click", () => {
+  detailModal.classList.remove("active");
+});
+
+detailModal.addEventListener("click", (e) => {
+  if (e.target === detailModal) {
+    detailModal.classList.remove("active");
+  }
+});
 
 function renderStars(container, currentRating, movieId) {
   container.innerHTML = "";
@@ -880,18 +1265,15 @@ async function setRating(movieId, rating, container) {
     return;
   }
   
-  // Aggiorna anche nello stato locale
   const target = allMovies.find(m => m.id === movieId);
   if (target) target.rating = rating;
 
   renderStars(container, rating, movieId);
 }
 
-// Listener per la ricerca e il filtraggio in tempo reale
 searchText.addEventListener("input", applyFiltersAndRender);
 filterType.addEventListener("change", applyFiltersAndRender);
 
-// ---------- Utilità ----------
 function setStatus(el, message, kind) {
   el.textContent = message;
   el.className = "status" + (kind ? " " + kind : "");
@@ -903,7 +1285,6 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ---------- Avvio ----------
 loadMovies();
 </script>
 </body>
