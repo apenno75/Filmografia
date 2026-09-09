@@ -389,6 +389,16 @@ h1, h2, h3 {
                 <input type="number" id="f-duration" min="1">
               </label>
             </div>
+            <label>Valutazione
+              <select id="f-rating">
+                <option value="0">Nessun voto</option>
+                <option value="1">★☆☆☆☆ (1/5)</option>
+                <option value="2">★★☆☆☆ (2/5)</option>
+                <option value="3">★★★☆☆ (3/5)</option>
+                <option value="4">★★★★☆ (4/5)</option>
+                <option value="5">★★★★★ (5/5)</option>
+              </select>
+            </label>
             <label>Genere
               <input type="text" id="f-genres" placeholder="Azione, Fantascienza...">
             </label>
@@ -462,6 +472,7 @@ const fTitle = document.getElementById("f-title");
 const fType = document.getElementById("f-type");
 const fYear = document.getElementById("f-year");
 const fDuration = document.getElementById("f-duration");
+const fRating = document.getElementById("f-rating");
 const fGenres = document.getElementById("f-genres");
 const fDirector = document.getElementById("f-director");
 const fPlot = document.getElementById("f-plot");
@@ -615,6 +626,7 @@ saveBtn.addEventListener("click", async () => {
       media_type: fType.value,
       release_year: fYear.value ? parseInt(fYear.value, 10) : null,
       duration_minutes: fDuration.value ? parseInt(fDuration.value, 10) : null,
+      rating: parseInt(fRating.value, 10) || 0,
       plot: fPlot.value.trim() || null,
       genres: fGenres.value ? fGenres.value.split(",").map((s) => s.trim()).filter(Boolean) : null,
       director: fDirector.value.trim() || null,
@@ -653,6 +665,7 @@ function resetAddPanel() {
   analyzeBtn.disabled = true;
   reviewForm.hidden = true;
   [fTitle, fYear, fDuration, fGenres, fDirector, fPlot].forEach((el) => (el.value = ""));
+  if (fRating) fRating.value = "0";
 }
 
 // ============================================================
