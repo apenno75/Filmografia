@@ -7,6 +7,7 @@
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
@@ -24,11 +25,22 @@ Deno.serve(async (req: Request) => {
   // nella variabile SUPABASE_PUBLISHABLE_KEYS: per un controllo byte-per-byte
   // in quel caso, adatta il confronto leggendo quella variabile (il formato
   // esatto è documentato in supabase.com/docs/guides/functions/auth-headers).
+  //
+  // IMPORTANTE: imposta il secret SUPABASE_ANON_KEY su questa funzione
+  // (supabase secrets set SUPABASE_ANON_KEY=...). Se resta assente, il
+  // controllo qui sotto viene saltato e l'endpoint accetta qualunque apikey.
   const providedKey = req.headers.get("apikey");
   const expectedKey = Deno.env.get("SUPABASE_ANON_KEY");
   if (!providedKey || (expectedKey && providedKey !== expectedKey)) {
     return new Response(JSON.stringify({ error: "Non autorizzato" }), {
       status: 401,
+      headers: { ...corsHeaders, "content-type": "application/json" },
+    });
+  }
+
+  if (!ANTHROPIC_API_KEY) {
+    return new Response(JSON.stringify({ error: "ANTHROPIC_API_KEY non configurata sulla funzione" }), {
+      status: 500,
       headers: { ...corsHeaders, "content-type": "application/json" },
     });
   }
@@ -47,10 +59,13 @@ Deno.serve(async (req: Request) => {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY ?? "",
+        "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
+        // Verifica su docs.anthropic.com quale sia l'identificativo di modello
+        // corrente e attivo per la tua chiave: i nomi cambiano nel tempo e un
+        // identificativo non valido fa fallire la chiamata qui sotto.
         model: "claude-sonnet-4-6",
         max_tokens: 400,
         messages: [
@@ -79,13 +94,19 @@ Deno.serve(async (req: Request) => {
       }),
     });
 
-    const data = await anthropicResponse.json();
+    if (!anthropicResponse.ok) {
+      const errText = await anthropicResponse.text();
+      console.error("Errore API Anthropic:", anthropicResponse.status, errText);
+      return new Response(
+        JSON.stringify({ error: `Riconoscimento non riuscito (${anthropicResponse.status})` }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "content-type": "application/json" },
+        }
+      );
+    }
 
-if (!anthropicResponse.ok) {
-  const errText = await anthropicResponse.text();
-  return new Response(JSON.stringify({ error: errText }), { status: 502, headers: {...corsHeaders, "content-type": "application/json"} });
-}
-	
+    const data = await anthropicResponse.json();
     const textBlock = (data.content || []).find((b: any) => b.type === "text");
     const raw = textBlock?.text ?? "{}";
     const cleaned = raw.replace(/```json|```/g, "").trim();
@@ -95,6 +116,7 @@ if (!anthropicResponse.ok) {
       headers: { ...corsHeaders, "content-type": "application/json" },
     });
   } catch (err) {
+    console.error("Errore nella funzione identify-cover:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
       headers: { ...corsHeaders, "content-type": "application/json" },

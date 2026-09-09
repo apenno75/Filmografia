@@ -7,7 +7,308 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<style>
+:root {
+  --bg: #12141c;
+  --panel: #1b1e29;
+  --panel-raised: #232733;
+  --line: #33384a;
+  --text: #f2efe9;
+  --text-muted: #9a9db0;
+  --amber: #e8a33d;
+  --amber-dim: #6b551f;
+  --teal: #3fa796;
+  --brick: #c9432e;
+  --radius: 6px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+h1, h2, h3 {
+  font-family: 'Bebas Neue', 'Inter', sans-serif;
+  letter-spacing: 0.03em;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ---------- Marquee header ---------- */
+.marquee {
+  background: linear-gradient(180deg, #191c26, #12141c);
+  border-bottom: 1px solid var(--line);
+  padding: 2.2rem 1.5rem 1.6rem;
+}
+.marquee-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.marquee h1 {
+  font-size: 3rem;
+  color: var(--amber);
+  text-shadow: 0 0 18px rgba(232, 163, 61, 0.35);
+}
+.marquee p {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Divisore a foro di pellicola: nasce dal soggetto (bobina di pellicola), non decorazione casuale */
+.sprocket {
+  height: 14px;
+  background-image: radial-gradient(circle, var(--bg) 4px, transparent 4.5px);
+  background-size: 22px 14px;
+  background-position: center;
+  background-color: #2a2e3b;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+/* ---------- Pannello "biglietto" ---------- */
+.ticket {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 3rem;
+}
+.ticket-stub {
+  background: var(--panel-raised);
+  border-right: 2px dashed var(--line);
+  padding: 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  position: relative;
+}
+.stub-label {
+  align-self: flex-start;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.preview-box {
+  width: 150px;
+  height: 210px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #14161e;
+  overflow: hidden;
+  text-align: center;
+  padding: 0.5rem;
+}
+.preview-box span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ticket-body {
+  padding: 1.5rem 1.75rem;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+.steps h3 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.steps p {
+  margin: 0 0 0.6rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.btn {
+  display: inline-block;
+  border: none;
+  border-radius: 4px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.btn-primary {
+  background: var(--amber);
+  color: #1b1405;
+}
+.btn-primary:disabled {
+  background: var(--amber-dim);
+  color: #7a7365;
+  cursor: not-allowed;
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.btn-outline:hover { border-color: var(--amber); }
+
+.status {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  min-height: 1.2em;
+}
+.status.error { color: var(--brick); }
+.status.ok { color: var(--teal); }
+
+/* ---------- Form di revisione ---------- */
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 480px;
+}
+.review-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.review-form input,
+.review-form select,
+.review-form textarea {
+  background: #14161e;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 0.5rem 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+}
+.review-form .row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ---------- Scaffale ---------- */
+.shelf-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+.shelf-header h2 {
+  font-size: 1.8rem;
+  color: var(--text);
+}
+.filter {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.filter select {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+}
+
+.shelf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1.4rem;
+}
+
+.movie-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.movie-cover {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  background: #14161e;
+  display: block;
+}
+.movie-info {
+  padding: 0.7rem 0.8rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.movie-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.movie-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.badge-dvd { background: rgba(63,167,150,0.18); color: var(--teal); }
+.badge-bluray { background: rgba(232,163,61,0.18); color: var(--amber); }
+
+.stars {
+  display: flex;
+  gap: 0.15rem;
+}
+.stars button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.05rem;
+  color: var(--line);
+  padding: 0;
+  line-height: 1;
+}
+.stars button.filled { color: var(--amber); }
+
+@media (max-width: 640px) {
+  .ticket { grid-template-columns: 1fr; }
+  .ticket-stub { border-right: none; border-bottom: 2px dashed var(--line); }
+  .review-form .row { grid-template-columns: 1fr; }
+  .marquee h1 { font-size: 2.2rem; }
+}
+</style>
 </head>
 <body>
 
@@ -105,7 +406,338 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="app.js"></script>
+<script>
+// ============================================================
+// CONFIGURAZIONE — sostituisci questi valori con i tuoi
+// ============================================================
+const CONFIG = {
+  // Impostazioni progetto (Supabase Dashboard > Project Settings > API Keys).
+  // Nei progetti nuovi si chiama "publishable key" (inizia con sb_publishable_...);
+  // nei progetti più vecchi puoi trovare ancora la "anon key" (un lungo JWT
+  // che inizia con eyJ...): vanno bene entrambe, incolla quella che vedi.
+  SUPABASE_URL: "https://erukzvrtjnvyzjvfuirn.supabase.co",
+  SUPABASE_KEY: "sb_publishable_FDhQ03affjzeyhCHuoKulg_Rp7PdyLM",
+
+  // La funzione edge che riconosce titolo/tipo dalla copertina.
+  // Va deployata separatamente su Supabase (vedi index.ts): non può stare
+  // in questo file perché deve girare lato server, dove la chiave Anthropic
+  // resta nascosta. L'URL corretto ha SEMPRE il dominio *.supabase.co,
+  // non un dominio come github.io.
+  IDENTIFY_FUNCTION_URL: "https://erukzvrtjnvyzjvfuirn.supabase.co/functions/v1/identify-cover",
+
+  // Chiave gratuita da themoviedb.org (Impostazioni > API)
+  TMDB_API_KEY: "2c669816245012266d15d06607d3d413",
+  TMDB_LANGUAGE: "it-IT",
+};
+
+// ============================================================
+// Cineteca — logica applicativa
+// ============================================================
+
+const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+
+// Stato della copertina in fase di analisi, prima del salvataggio
+let pendingFile = null;
+let pendingBase64 = null;
+
+// ---------- Riferimenti agli elementi ----------
+const coverInput = document.getElementById("cover-input");
+const previewImg = document.getElementById("preview-img");
+const previewPlaceholder = document.getElementById("preview-placeholder");
+const analyzeBtn = document.getElementById("analyze-btn");
+const analyzeStatus = document.getElementById("analyze-status");
+const reviewForm = document.getElementById("review-form");
+const saveBtn = document.getElementById("save-btn");
+const saveStatus = document.getElementById("save-status");
+
+const fTitle = document.getElementById("f-title");
+const fType = document.getElementById("f-type");
+const fYear = document.getElementById("f-year");
+const fDuration = document.getElementById("f-duration");
+const fGenres = document.getElementById("f-genres");
+const fDirector = document.getElementById("f-director");
+const fPlot = document.getElementById("f-plot");
+
+const shelfGrid = document.getElementById("shelf-grid");
+const shelfEmpty = document.getElementById("shelf-empty");
+const filterType = document.getElementById("filter-type");
+
+// ============================================================
+// 1. Caricamento copertina
+// ============================================================
+coverInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  pendingFile = file;
+  previewImg.src = URL.createObjectURL(file);
+  previewImg.hidden = false;
+  previewPlaceholder.hidden = true;
+  analyzeBtn.disabled = false;
+  analyzeStatus.textContent = "";
+  reviewForm.hidden = true;
+
+  pendingBase64 = await fileToBase64(file);
+});
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ============================================================
+// 2. Riconoscimento automatico (copertina -> titolo + tipo)
+//    poi arricchimento dati (TMDB -> anno, durata, trama, genere, regia)
+// ============================================================
+analyzeBtn.addEventListener("click", async () => {
+  if (!pendingFile || !pendingBase64) return;
+
+  setStatus(analyzeStatus, "Lettura della copertina in corso...", null);
+  analyzeBtn.disabled = true;
+
+  try {
+    const guess = await identifyCover(pendingBase64, pendingFile.type);
+
+    if (!guess.title) {
+      throw new Error("La funzione di riconoscimento non ha restituito un titolo.");
+    }
+
+    setStatus(analyzeStatus, `Titolo riconosciuto: "${guess.title}". Ricerco i dettagli...`, null);
+
+    const details = await searchTMDB(guess.title);
+
+    fTitle.value = guess.title || "";
+    fType.value = normalizeMediaType(guess.media_type_guess);
+    fYear.value = details.year || "";
+    fDuration.value = details.duration || "";
+    fGenres.value = (details.genres || []).join(", ");
+    fDirector.value = details.director || "";
+    fPlot.value = details.plot || "";
+
+    reviewForm.hidden = false;
+    setStatus(analyzeStatus, "Fatto. Controlla i campi e correggi se necessario.", "ok");
+  } catch (err) {
+    console.error(err);
+    setStatus(analyzeStatus, "Non sono riuscito ad analizzare la copertina. Puoi compilare i campi a mano qui sotto.", "error");
+    // Anche in caso di errore, apriamo il form per l'inserimento manuale
+    fTitle.value = "";
+    reviewForm.hidden = false;
+  } finally {
+    analyzeBtn.disabled = false;
+  }
+});
+
+// Chiama la funzione edge Supabase che usa un modello con visione per leggere la copertina
+async function identifyCover(base64, mimeType) {
+  const response = await fetch(CONFIG.IDENTIFY_FUNCTION_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": CONFIG.SUPABASE_KEY,
+      "Authorization": `Bearer ${CONFIG.SUPABASE_KEY}`,
+    },
+    body: JSON.stringify({ imageBase64: base64, mediaType: mimeType }),
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message = data && data.error ? data.error : `Errore ${response.status} nella funzione di riconoscimento`;
+    throw new Error(message);
+  }
+  if (!data) {
+    throw new Error("Risposta non valida dalla funzione di riconoscimento");
+  }
+
+  return data; // { title, media_type_guess, language }
+}
+
+function normalizeMediaType(guess) {
+  if (!guess) return "DVD";
+  const g = guess.toLowerCase();
+  if (g.includes("4k")) return "Blu-ray 4K";
+  if (g.includes("blu")) return "Blu-ray";
+  return "DVD";
+}
+
+// Cerca il film su TMDB a partire dal titolo e restituisce i metadati principali
+async function searchTMDB(title) {
+  const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${CONFIG.TMDB_API_KEY}&language=${CONFIG.TMDB_LANGUAGE}&query=${encodeURIComponent(title)}`;
+  const searchRes = await fetch(searchUrl);
+  const searchData = await searchRes.json();
+
+  const best = searchData.results && searchData.results[0];
+  if (!best) return {};
+
+  const detailsUrl = `https://api.themoviedb.org/3/movie/${best.id}?api_key=${CONFIG.TMDB_API_KEY}&language=${CONFIG.TMDB_LANGUAGE}&append_to_response=credits`;
+  const detailsRes = await fetch(detailsUrl);
+  const details = await detailsRes.json();
+
+  const director = (details.credits?.crew || []).find((c) => c.job === "Director");
+
+  return {
+    year: details.release_date ? details.release_date.slice(0, 4) : "",
+    duration: details.runtime || "",
+    plot: details.overview || "",
+    genres: (details.genres || []).map((g) => g.name),
+    director: director ? director.name : "",
+    tmdbTitle: details.title || title,
+  };
+}
+
+// ============================================================
+// 3. Salvataggio nello scaffale
+// ============================================================
+saveBtn.addEventListener("click", async () => {
+  if (!fTitle.value.trim()) {
+    setStatus(saveStatus, "Inserisci almeno il titolo.", "error");
+    return;
+  }
+
+  saveBtn.disabled = true;
+  setStatus(saveStatus, "Salvataggio in corso...", null);
+
+  try {
+    const coverUrl = await uploadCover(pendingFile);
+
+    const { error } = await supabase.from("movies").insert({
+      title: fTitle.value.trim(),
+      media_type: fType.value,
+      release_year: fYear.value ? parseInt(fYear.value, 10) : null,
+      duration_minutes: fDuration.value ? parseInt(fDuration.value, 10) : null,
+      plot: fPlot.value.trim() || null,
+      genres: fGenres.value ? fGenres.value.split(",").map((s) => s.trim()).filter(Boolean) : null,
+      director: fDirector.value.trim() || null,
+      cover_url: coverUrl,
+    });
+
+    if (error) throw error;
+
+    setStatus(saveStatus, "Aggiunto allo scaffale.", "ok");
+    resetAddPanel();
+    await loadMovies();
+  } catch (err) {
+    console.error(err);
+    setStatus(saveStatus, "Salvataggio non riuscito. Riprova.", "error");
+  } finally {
+    saveBtn.disabled = false;
+  }
+});
+
+async function uploadCover(file) {
+  const path = `${crypto.randomUUID()}-${file.name}`;
+  const { error } = await supabase.storage.from("covers").upload(path, file);
+  if (error) throw error;
+  const { data } = supabase.storage.from("covers").getPublicUrl(path);
+  return data.publicUrl;
+}
+
+function resetAddPanel() {
+  pendingFile = null;
+  pendingBase64 = null;
+  coverInput.value = "";
+  previewImg.hidden = true;
+  previewPlaceholder.hidden = false;
+  analyzeBtn.disabled = true;
+  reviewForm.hidden = true;
+  [fTitle, fYear, fDuration, fGenres, fDirector, fPlot].forEach((el) => (el.value = ""));
+}
+
+// ============================================================
+// 4. Scaffale: caricamento ed elenco dei film
+// ============================================================
+async function loadMovies() {
+  const { data, error } = await supabase
+    .from("movies")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  renderShelf(data);
+}
+
+function renderShelf(movies) {
+  const filter = filterType.value;
+  const filtered = filter === "all" ? movies : movies.filter((m) => m.media_type === filter);
+
+  shelfGrid.innerHTML = "";
+  shelfEmpty.hidden = filtered.length > 0;
+
+  filtered.forEach((movie) => {
+    shelfGrid.appendChild(renderMovieCard(movie));
+  });
+}
+
+function renderMovieCard(movie) {
+  const card = document.createElement("div");
+  card.className = "movie-card";
+
+  const badgeClass = movie.media_type === "DVD" ? "badge-dvd" : "badge-bluray";
+
+  card.innerHTML = `
+    <img class="movie-cover" src="${movie.cover_url || ""}" alt="Copertina di ${escapeHtml(movie.title)}">
+    <div class="movie-info">
+      <div class="movie-title">${escapeHtml(movie.title)}</div>
+      <div class="movie-meta">
+        <span class="badge ${badgeClass}">${movie.media_type}</span>
+        <span>${movie.release_year || "—"}</span>
+        <span>${movie.duration_minutes ? movie.duration_minutes + " min" : ""}</span>
+      </div>
+      <div class="stars" data-id="${movie.id}"></div>
+    </div>
+  `;
+
+  const starsBox = card.querySelector(".stars");
+  renderStars(starsBox, movie.rating || 0, movie.id);
+
+  return card;
+}
+
+function renderStars(container, currentRating, movieId) {
+  container.innerHTML = "";
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = "★";
+    btn.className = i <= currentRating ? "filled" : "";
+    btn.setAttribute("aria-label", `Vota ${i} stelle`);
+    btn.addEventListener("click", () => setRating(movieId, i, container));
+    container.appendChild(btn);
+  }
+}
+
+async function setRating(movieId, rating, container) {
+  const { error } = await supabase.from("movies").update({ rating }).eq("id", movieId);
+  if (error) {
+    console.error(error);
+    return;
+  }
+  renderStars(container, rating, movieId);
+}
+
+filterType.addEventListener("change", loadMovies);
+
+// ---------- Utilità ----------
+function setStatus(el, message, kind) {
+  el.textContent = message;
+  el.className = "status" + (kind ? " " + kind : "");
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str || "";
+  return div.innerHTML;
+}
+
+// ---------- Avvio ----------
+loadMovies();
+</script>
 </body>
 </html>
