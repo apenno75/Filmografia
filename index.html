@@ -1135,6 +1135,28 @@ function startEditingMovie(movie) {
   document.getElementById("add-panel").scrollIntoView({ behavior: "smooth" });
 }
 
+async function deleteMovie(movie) {
+  if (!confirm(`Sei sicuro di voler eliminare "${movie.title}" dallo scaffale?`)) return;
+
+  try {
+    const { error } = await supabaseClient
+      .from("movies")
+      .delete()
+      .eq("id", movie.id);
+
+    if (error) throw error;
+
+    if (editingMovieId === movie.id) {
+      resetAddPanel();
+    }
+
+    await loadMovies();
+  } catch (err) {
+    console.error(err);
+    alert("Errore durante l'eliminazione del film.");
+  }
+}
+
 // ============================================================
 // 4. Scaffale & Modale Dettagli
 // ============================================================
@@ -1191,7 +1213,10 @@ function renderMovieCard(movie) {
     <div class="movie-info">
       <div class="movie-header-row">
         <div class="movie-title">${escapeHtml(movie.title)}</div>
-        <button class="btn-edit" title="Modifica film">✏️</button>
+        <div style="display:flex; gap:0.25rem;">
+          <button class="btn-edit" title="Modifica film">✏️</button>
+          <button class="btn-edit btn-delete" title="Elimina film">🗑️</button>
+        </div>
       </div>
       ${genreText ? `<div class="movie-genres">${escapeHtml(genreText)}</div>` : ''}
       <div class="movie-meta">
@@ -1206,6 +1231,7 @@ function renderMovieCard(movie) {
   // Apri il modale dettagli cliccando sulla locandina
   card.querySelector(".movie-cover").addEventListener("click", () => openDetailModal(movie));
   card.querySelector(".btn-edit").addEventListener("click", () => startEditingMovie(movie));
+  card.querySelector(".btn-delete").addEventListener("click", () => deleteMovie(movie));
 
   const starsBox = card.querySelector(".stars");
   renderStars(starsBox, movie.rating || 0, movie.id);
