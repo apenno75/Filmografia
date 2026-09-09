@@ -436,7 +436,7 @@ const CONFIG = {
 // Cineteca — logica applicativa
 // ============================================================
 
-const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
 
 // Stato della copertina in fase di analisi, prima del salvataggio
 let pendingFile = null;
@@ -614,7 +614,7 @@ saveBtn.addEventListener("click", async () => {
   try {
     const coverUrl = await uploadCover(pendingFile);
 
-    const { error } = await supabase.from("movies").insert({
+    const { error } = await supabaseClient.from("movies").insert({
       title: fTitle.value.trim(),
       media_type: fType.value,
       release_year: fYear.value ? parseInt(fYear.value, 10) : null,
@@ -640,9 +640,9 @@ saveBtn.addEventListener("click", async () => {
 
 async function uploadCover(file) {
   const path = `${crypto.randomUUID()}-${file.name}`;
-  const { error } = await supabase.storage.from("covers").upload(path, file);
+  const { error } = await supabaseClient.storage.from("covers").upload(path, file);
   if (error) throw error;
-  const { data } = supabase.storage.from("covers").getPublicUrl(path);
+  const { data } = supabaseClient.storage.from("covers").getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -661,7 +661,7 @@ function resetAddPanel() {
 // 4. Scaffale: caricamento ed elenco dei film
 // ============================================================
 async function loadMovies() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("movies")
     .select("*")
     .order("created_at", { ascending: false });
@@ -724,7 +724,7 @@ function renderStars(container, currentRating, movieId) {
 }
 
 async function setRating(movieId, rating, container) {
-  const { error } = await supabase.from("movies").update({ rating }).eq("id", movieId);
+  const { error } = await supabaseClient.from("movies").update({ rating }).eq("id", movieId);
   if (error) {
     console.error(error);
     return;
