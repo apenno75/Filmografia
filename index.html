@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cineteca — la tua videoteca personale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="marquee">
+  <div class="marquee-inner">
+    <h1>Cineteca</h1>
+    <p>la tua videoteca personale, catalogata a partire dalla copertina</p>
+  </div>
+</header>
+
+<div class="sprocket" aria-hidden="true"></div>
+
+<main class="page">
+
+  <!-- Pannello di aggiunta film, in stile "biglietto" -->
+  <section class="ticket" id="add-panel">
+    <div class="ticket-stub">
+      <span class="stub-label">Nuovo</span>
+      <div id="preview-box" class="preview-box">
+        <span id="preview-placeholder">Nessuna copertina</span>
+        <img id="preview-img" alt="Anteprima copertina" hidden>
+      </div>
+      <label class="btn btn-outline" for="cover-input">Scegli copertina</label>
+      <input type="file" id="cover-input" accept="image/*" capture="environment" hidden>
+    </div>
+
+    <div class="ticket-body">
+      <ol class="steps">
+        <li>
+          <h3>1. Carica la foto della copertina</h3>
+          <p>Va bene una foto scattata col telefono o un'immagine già salvata.</p>
+        </li>
+        <li>
+          <h3>2. Riconoscimento automatico</h3>
+          <p>Il titolo, il tipo di supporto, l'anno, la durata, la trama e il genere vengono cercati per te.</p>
+          <button id="analyze-btn" class="btn btn-primary" disabled>Analizza copertina</button>
+          <p id="analyze-status" class="status" role="status"></p>
+        </li>
+        <li>
+          <h3>3. Correggi se serve</h3>
+          <div id="review-form" class="review-form" hidden>
+            <label>Titolo
+              <input type="text" id="f-title">
+            </label>
+            <div class="row">
+              <label>Tipo
+                <select id="f-type">
+                  <option value="DVD">DVD</option>
+                  <option value="Blu-ray">Blu-ray</option>
+                  <option value="Blu-ray 4K">Blu-ray 4K</option>
+                </select>
+              </label>
+              <label>Anno
+                <input type="number" id="f-year" min="1900" max="2100">
+              </label>
+              <label>Durata (min)
+                <input type="number" id="f-duration" min="1">
+              </label>
+            </div>
+            <label>Genere
+              <input type="text" id="f-genres" placeholder="Azione, Fantascienza...">
+            </label>
+            <label>Regia
+              <input type="text" id="f-director">
+            </label>
+            <label>Trama
+              <textarea id="f-plot" rows="4"></textarea>
+            </label>
+            <button id="save-btn" class="btn btn-primary">Aggiungi allo scaffale</button>
+            <p id="save-status" class="status" role="status"></p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Scaffale -->
+  <section class="shelf">
+    <div class="shelf-header">
+      <h2>Il tuo scaffale</h2>
+      <label class="filter">
+        Mostra
+        <select id="filter-type">
+          <option value="all">Tutti i supporti</option>
+          <option value="DVD">Solo DVD</option>
+          <option value="Blu-ray">Solo Blu-ray</option>
+          <option value="Blu-ray 4K">Solo Blu-ray 4K</option>
+        </select>
+      </label>
+    </div>
+    <p id="shelf-empty" class="status" hidden>Lo scaffale è vuoto. Carica la prima copertina per iniziare.</p>
+    <div id="shelf-grid" class="shelf-grid"></div>
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
