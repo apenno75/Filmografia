@@ -377,7 +377,8 @@ h1, h2, h3 {
   <div class="main-actions">
     <button id="toggle-add-btn" class="btn btn-primary">➕ Carica Nuovo Film</button>
     <button id="toggle-search-btn" class="btn btn-outline">🔍 Cerca e Filtra</button>
-    <button id="toggle-collection-btn" class="btn btn-outline">📦 Cofanetti</button>
+    <button id="toggle-collection-btn" class="btn btn-outline">➕ Carica Nuovo Cofanetto</button>
+    <button id="toggle-manage-collections-btn" class="btn btn-outline">📦 Gestisci Cofanetti</button>
   </div>
 
   <!-- Pannello Ricerca -->
@@ -533,13 +534,15 @@ h1, h2, h3 {
               <p id="collection-save-status" class="status" role="status"></p>
             </div>
           </li>
-          <li>
-            <h3>Cofanetti esistenti</h3>
-            <div id="collection-list" class="collection-manage-list"></div>
-          </li>
         </ol>
       </div>
     </div>
+  </section>
+
+  <!-- Pannello Gestione Cofanetti -->
+  <section id="manage-collections-panel" class="collapsible-panel">
+    <h2 style="font-size:1.3rem; margin-bottom:1rem;">Cofanetti esistenti</h2>
+    <div id="collection-list" class="collection-manage-list"></div>
   </section>
 
   <!-- Scaffale -->
@@ -679,9 +682,11 @@ let collectionParts = [];
 const toggleAddBtn = document.getElementById("toggle-add-btn");
 const toggleSearchBtn = document.getElementById("toggle-search-btn");
 const toggleCollectionBtn = document.getElementById("toggle-collection-btn");
+const toggleManageCollectionsBtn = document.getElementById("toggle-manage-collections-btn");
 const addPanel = document.getElementById("add-panel");
 const searchPanel = document.getElementById("search-panel");
 const collectionPanel = document.getElementById("collection-panel");
+const manageCollectionsPanel = document.getElementById("manage-collections-panel");
 
 const collectionStubModeLabel = document.getElementById("collection-stub-mode-label");
 const collectionPreviewImg = document.getElementById("collection-preview-img");
@@ -782,6 +787,7 @@ toggleAddBtn.addEventListener("click", () => {
   addPanel.classList.toggle("open", !isOpen);
   searchPanel.classList.remove("open");
   collectionPanel.classList.remove("open");
+  manageCollectionsPanel.classList.remove("open");
   if (!isOpen && editingMovieId === null) {
     resetAddPanel();
   }
@@ -792,6 +798,7 @@ toggleSearchBtn.addEventListener("click", () => {
   searchPanel.classList.toggle("open", !isOpen);
   addPanel.classList.remove("open");
   collectionPanel.classList.remove("open");
+  manageCollectionsPanel.classList.remove("open");
 });
 
 toggleCollectionBtn.addEventListener("click", () => {
@@ -799,9 +806,18 @@ toggleCollectionBtn.addEventListener("click", () => {
   collectionPanel.classList.toggle("open", !isOpen);
   addPanel.classList.remove("open");
   searchPanel.classList.remove("open");
+  manageCollectionsPanel.classList.remove("open");
   if (!isOpen && editingCollectionId === null) {
     resetCollectionPanel();
   }
+});
+
+toggleManageCollectionsBtn.addEventListener("click", () => {
+  const isOpen = manageCollectionsPanel.classList.contains("open");
+  manageCollectionsPanel.classList.toggle("open", !isOpen);
+  addPanel.classList.remove("open");
+  searchPanel.classList.remove("open");
+  collectionPanel.classList.remove("open");
 });
 
 // OCR & File Input
@@ -1222,6 +1238,8 @@ function startEditingMovie(movie) {
 
   addPanel.classList.add("open");
   searchPanel.classList.remove("open");
+  collectionPanel.classList.remove("open");
+  manageCollectionsPanel.classList.remove("open");
   addPanel.scrollIntoView({ behavior: "smooth" });
 }
 
@@ -1738,6 +1756,7 @@ function startEditingCollection(col) {
   collectionPanel.classList.add("open");
   addPanel.classList.remove("open");
   searchPanel.classList.remove("open");
+  manageCollectionsPanel.classList.remove("open");
   collectionPanel.scrollIntoView({ behavior: "smooth" });
 }
 
