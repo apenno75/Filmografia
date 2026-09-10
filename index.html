@@ -314,6 +314,24 @@ h1, h2, h3 {
 .detail-director { font-size: 0.85rem; color: var(--text-muted); }
 .detail-plot { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; white-space: pre-wrap; }
 
+/* Modal Conferma Copertina */
+.cover-confirm-box { max-width: 640px; width: 100%; }
+.cover-confirm-close-btn {
+  align-self: flex-end;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-size: 1.1rem;
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.cover-confirm-grid { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+.cover-confirm-option { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; width: 160px; }
+.cover-confirm-option .detail-cover { width: 100%; }
+.cover-confirm-label { font-size: 0.78rem; color: var(--text-muted); text-align: center; }
+
 @media (max-width: 640px) {
   .ticket { grid-template-columns: 1fr; }
   .ticket-stub { border-right: none; border-bottom: 2px dashed var(--line); }
@@ -420,6 +438,9 @@ h1, h2, h3 {
               <label>Regia
                 <input type="text" id="f-director">
               </label>
+              <label>Cast
+                <input type="text" id="f-cast" placeholder="Attore 1, Attore 2...">
+              </label>
               <label>Trama
                 <textarea id="f-plot" rows="3"></textarea>
               </label>
@@ -485,7 +506,28 @@ h1, h2, h3 {
         </div>
         <div id="d-genres" class="detail-genres"></div>
         <div id="d-director" class="detail-director"></div>
+        <div id="d-cast" class="detail-director"></div>
         <div id="d-plot" class="detail-plot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Conferma Copertina -->
+<div id="cover-confirm-modal" class="modal-overlay">
+  <div class="modal-box cover-confirm-box">
+    <button id="cover-confirm-close-btn" type="button" class="cover-confirm-close-btn" title="Chiudi">✕</button>
+    <h3 style="margin:0; font-family:'Inter'; font-size:0.95rem;">Quale copertina è quella corretta per «<span id="cover-confirm-title"></span>»?</h3>
+    <div class="cover-confirm-grid">
+      <div class="cover-confirm-option">
+        <span class="cover-confirm-label">Trovata online</span>
+        <img id="cover-confirm-found-img" class="detail-cover" alt="Copertina trovata online">
+        <button id="cover-confirm-use-found-btn" type="button" class="btn btn-primary" style="width:100%;">Usa questa</button>
+      </div>
+      <div class="cover-confirm-option">
+        <span class="cover-confirm-label">Caricata da te</span>
+        <img id="cover-confirm-mine-img" class="detail-cover" alt="Copertina caricata da te">
+        <button id="cover-confirm-use-mine-btn" type="button" class="btn btn-outline" style="width:100%;">Usa questa</button>
       </div>
     </div>
   </div>
@@ -507,6 +549,7 @@ const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.
 let pendingFile = null;
 let editingMovieId = null;
 let editingCoverUrl = null;
+let externalCoverUrl = null;
 let allMovies = [];
 let filteredMovies = [];
 let currentPage = 1;
@@ -539,6 +582,7 @@ const fDuration = document.getElementById("f-duration");
 const fRating = document.getElementById("f-rating");
 const fGenres = document.getElementById("f-genres");
 const fDirector = document.getElementById("f-director");
+const fCast = document.getElementById("f-cast");
 const fPlot = document.getElementById("f-plot");
 
 const searchText = document.getElementById("search-text");
@@ -567,7 +611,16 @@ const dDuration = document.getElementById("d-duration");
 const dRating = document.getElementById("d-rating");
 const dGenres = document.getElementById("d-genres");
 const dDirector = document.getElementById("d-director");
+const dCast = document.getElementById("d-cast");
 const dPlot = document.getElementById("d-plot");
+
+const coverConfirmModal = document.getElementById("cover-confirm-modal");
+const coverConfirmTitle = document.getElementById("cover-confirm-title");
+const coverConfirmFoundImg = document.getElementById("cover-confirm-found-img");
+const coverConfirmMineImg = document.getElementById("cover-confirm-mine-img");
+const coverConfirmUseFoundBtn = document.getElementById("cover-confirm-use-found-btn");
+const coverConfirmUseMineBtn = document.getElementById("cover-confirm-use-mine-btn");
+const coverConfirmCloseBtn = document.getElementById("cover-confirm-close-btn");
 
 // Toggle Pannelli Accordion
 toggleAddBtn.addEventListener("click", () => {
@@ -591,6 +644,7 @@ coverInput.addEventListener("change", async (e) => {
   if (!file) return;
 
   pendingFile = file;
+  externalCoverUrl = null;
   previewImg.src = URL.createObjectURL(file);
   previewImg.hidden = false;
   previewPlaceholder.hidden = true;
@@ -733,11 +787,21 @@ analyzeBtn.addEventListener("click", async () => {
 
   try {
     const details = await searchTMDB(titleToSearch);
+
+    if (details.poster) {
+      const mineCoverSrc = previewImg.src;
+      const choice = await confirmCoverChoice(details.poster, mineCoverSrc, details.tmdbTitle || titleToSearch);
+      if (choice === "found") {
+        applyFoundCover(details.poster);
+      }
+    }
+
     fTitle.value = details.tmdbTitle || titleToSearch;
     fYear.value = details.year || fYear.value || "";
     fDuration.value = details.duration || fDuration.value || "";
     fGenres.value = (details.genres || []).join(", ") || fGenres.value || "";
     fDirector.value = details.director || fDirector.value || "";
+    fCast.value = (details.cast || []).join(", ") || fCast.value || "";
     fPlot.value = details.plot || fPlot.value || "";
 
     reviewForm.hidden = false;
@@ -763,6 +827,8 @@ async function searchTMDB(title) {
   const detailsRes = await fetch(detailsUrl);
   const details = await detailsRes.json();
   const director = (details.credits?.crew || []).find((c) => c.job === "Director");
+  const posterPath = details.poster_path || best.poster_path || "";
+  const cast = (details.credits?.cast || []).slice(0, 8).map((c) => c.name);
 
   return {
     year: details.release_date ? details.release_date.slice(0, 4) : "",
@@ -770,8 +836,49 @@ async function searchTMDB(title) {
     plot: details.overview || "",
     genres: (details.genres || []).map((g) => g.name),
     director: director ? director.name : "",
+    cast: cast,
     tmdbTitle: details.title || title,
+    poster: posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : "",
   };
+}
+
+// Modal Conferma Copertina
+function confirmCoverChoice(foundUrl, mineUrl, titleText) {
+  return new Promise((resolve) => {
+    coverConfirmTitle.textContent = titleText || "";
+    coverConfirmFoundImg.src = foundUrl;
+    coverConfirmMineImg.src = mineUrl || "";
+    coverConfirmModal.classList.add("active");
+
+    function cleanup(result) {
+      coverConfirmModal.classList.remove("active");
+      coverConfirmUseFoundBtn.removeEventListener("click", onFound);
+      coverConfirmUseMineBtn.removeEventListener("click", onMine);
+      coverConfirmCloseBtn.removeEventListener("click", onMine);
+      coverConfirmModal.removeEventListener("click", onOverlayClick);
+      resolve(result);
+    }
+    function onFound() { cleanup("found"); }
+    function onMine() { cleanup("mine"); }
+    function onOverlayClick(e) { if (e.target === coverConfirmModal) onMine(); }
+
+    coverConfirmUseFoundBtn.addEventListener("click", onFound);
+    coverConfirmUseMineBtn.addEventListener("click", onMine);
+    coverConfirmCloseBtn.addEventListener("click", onMine);
+    coverConfirmModal.addEventListener("click", onOverlayClick);
+  });
+}
+
+function applyFoundCover(posterUrl) {
+  // Usiamo direttamente il link della copertina trovata (evita problemi di CORS
+  // che si avrebbero scaricando l'immagine lato client per poi ricaricarla).
+  pendingFile = null;
+  externalCoverUrl = posterUrl;
+
+  previewImg.src = posterUrl;
+  previewImg.hidden = false;
+  previewPlaceholder.hidden = true;
+  cropBtn.style.display = "none";
 }
 
 // Salvataggio / Modifica
@@ -788,6 +895,8 @@ saveBtn.addEventListener("click", async () => {
     let coverUrl = editingCoverUrl;
     if (pendingFile) {
       coverUrl = await uploadCover(pendingFile);
+    } else if (externalCoverUrl) {
+      coverUrl = externalCoverUrl;
     }
 
     const payload = {
@@ -799,6 +908,7 @@ saveBtn.addEventListener("click", async () => {
       plot: fPlot.value.trim() || null,
       genres: fGenres.value ? fGenres.value.split(",").map((s) => s.trim()).filter(Boolean) : null,
       director: fDirector.value.trim() || null,
+      cast: fCast.value ? fCast.value.split(",").map((s) => s.trim()).filter(Boolean) : null,
       cover_url: coverUrl,
     };
 
@@ -843,6 +953,7 @@ function resetAddPanel() {
   pendingFile = null;
   editingMovieId = null;
   editingCoverUrl = null;
+  externalCoverUrl = null;
 
   stubModeLabel.textContent = "Nuovo";
   saveBtn.textContent = "Aggiungi";
@@ -857,7 +968,7 @@ function resetAddPanel() {
   analyzeBtn.disabled = true;
   reviewForm.hidden = true;
 
-  [fTitle, fYear, fDuration, fGenres, fDirector, fPlot].forEach((el) => (el.value = ""));
+  [fTitle, fYear, fDuration, fGenres, fDirector, fCast, fPlot].forEach((el) => (el.value = ""));
   if (fRating) fRating.value = "0";
   setStatus(analyzeStatus, "", null);
   setStatus(saveStatus, "", null);
@@ -866,6 +977,7 @@ function resetAddPanel() {
 function startEditingMovie(movie) {
   editingMovieId = movie.id;
   editingCoverUrl = movie.cover_url;
+  externalCoverUrl = null;
 
   stubModeLabel.textContent = "Modifica";
   saveBtn.textContent = "Salva Modifiche";
@@ -887,6 +999,7 @@ function startEditingMovie(movie) {
   fRating.value = movie.rating || "0";
   fGenres.value = Array.isArray(movie.genres) ? movie.genres.join(", ") : "";
   fDirector.value = movie.director || "";
+  fCast.value = Array.isArray(movie.cast) ? movie.cast.join(", ") : "";
   fPlot.value = movie.plot || "";
 
   reviewForm.hidden = false;
@@ -1036,6 +1149,7 @@ function openDetailModal(movie) {
   dRating.textContent = movie.rating ? "★".repeat(movie.rating) + "☆".repeat(5 - movie.rating) : "Nessun voto";
   dGenres.textContent = Array.isArray(movie.genres) ? movie.genres.join(" • ") : "";
   dDirector.textContent = movie.director ? `Regia: ${movie.director}` : "";
+  dCast.textContent = Array.isArray(movie.cast) && movie.cast.length ? `Cast: ${movie.cast.join(", ")}` : "";
   dPlot.textContent = movie.plot || "Nessuna trama disponibile.";
 
   detailModal.classList.add("active");
