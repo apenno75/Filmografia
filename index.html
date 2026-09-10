@@ -332,6 +332,25 @@ h1, h2, h3 {
 .cover-confirm-option .detail-cover { width: 100%; }
 .cover-confirm-label { font-size: 0.78rem; color: var(--text-muted); text-align: center; }
 
+/* Gestione Cofanetti */
+.collection-manage-list { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; max-width: 480px; }
+.collection-manage-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+}
+.collection-manage-cover { width: 34px; height: 48px; object-fit: cover; border-radius: 3px; background: #14161e; flex-shrink: 0; }
+.collection-manage-name { flex: 1; font-size: 0.85rem; }
+.collection-manage-count { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+.badge-collection { background: rgba(201,67,46,0.18); color: var(--brick); }
+
+.collection-detail-movies { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); }
+.collection-detail-movies h3 { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.8rem; }
+
 @media (max-width: 640px) {
   .ticket { grid-template-columns: 1fr; }
   .ticket-stub { border-right: none; border-bottom: 2px dashed var(--line); }
@@ -358,6 +377,7 @@ h1, h2, h3 {
   <div class="main-actions">
     <button id="toggle-add-btn" class="btn btn-primary">➕ Carica Nuovo Film</button>
     <button id="toggle-search-btn" class="btn btn-outline">🔍 Cerca e Filtra</button>
+    <button id="toggle-collection-btn" class="btn btn-outline">📦 Cofanetti</button>
   </div>
 
   <!-- Pannello Ricerca -->
@@ -441,6 +461,11 @@ h1, h2, h3 {
               <label>Cast
                 <input type="text" id="f-cast" placeholder="Attore 1, Attore 2...">
               </label>
+              <label>Cofanetto
+                <select id="f-collection">
+                  <option value="">Nessuno (film singolo)</option>
+                </select>
+              </label>
               <label>Trama
                 <textarea id="f-plot" rows="3"></textarea>
               </label>
@@ -450,6 +475,64 @@ h1, h2, h3 {
               </div>
               <p id="save-status" class="status" role="status"></p>
             </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pannello Cofanetti -->
+  <section id="collection-panel" class="collapsible-panel">
+    <div class="ticket">
+      <div class="ticket-stub">
+        <span class="stub-label" id="collection-stub-mode-label">Nuovo</span>
+        <div id="collection-preview-box" class="preview-box">
+          <span id="collection-preview-placeholder">Nessuna copertina</span>
+          <img id="collection-preview-img" alt="Anteprima copertina cofanetto" hidden>
+        </div>
+        <label class="btn btn-outline" for="collection-cover-input">Scegli foto</label>
+        <input type="file" id="collection-cover-input" accept="image/*" capture="environment" hidden>
+      </div>
+
+      <div class="ticket-body">
+        <ol class="steps">
+          <li>
+            <h3>Dati cofanetto</h3>
+            <div class="review-form" style="margin-top:0; padding-top:0; border-top:none;">
+              <label>Titolo
+                <input type="text" id="collection-title" placeholder="Es. Il Signore degli Anelli - Trilogia">
+              </label>
+              <div class="search-box">
+                <button id="collection-analyze-btn" type="button" class="btn btn-primary">Cerca dati online</button>
+              </div>
+              <p id="collection-analyze-status" class="status" role="status"></p>
+              <div class="row">
+                <label>Tipo
+                  <select id="collection-type">
+                    <option value="DVD">DVD</option>
+                    <option value="Blu-ray">Blu-ray</option>
+                    <option value="Blu-ray 4K">Blu-ray 4K</option>
+                  </select>
+                </label>
+              </div>
+              <label>Note
+                <textarea id="collection-notes" rows="2" placeholder="Edizione speciale, extra, ecc..."></textarea>
+              </label>
+              <div id="collection-parts-block" hidden>
+                <h3 style="font-size:0.85rem; margin-bottom:0.4rem;">Film trovati per questo cofanetto</h3>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:0 0 0.5rem;">Seleziona quali importare nello scaffale, già collegati a questo cofanetto.</p>
+                <div id="collection-parts-list" class="collection-manage-list"></div>
+              </div>
+              <div class="form-actions">
+                <button id="collection-save-btn" class="btn btn-primary">Crea Cofanetto</button>
+                <button id="collection-cancel-btn" class="btn btn-outline" type="button">Annulla</button>
+              </div>
+              <p id="collection-save-status" class="status" role="status"></p>
+            </div>
+          </li>
+          <li>
+            <h3>Cofanetti esistenti</h3>
+            <div id="collection-list" class="collection-manage-list"></div>
           </li>
         </ol>
       </div>
@@ -507,8 +590,35 @@ h1, h2, h3 {
         <div id="d-genres" class="detail-genres"></div>
         <div id="d-director" class="detail-director"></div>
         <div id="d-cast" class="detail-director"></div>
+        <div id="d-collection" class="detail-director"></div>
         <div id="d-plot" class="detail-plot"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Dettaglio Cofanetto -->
+<div id="collection-detail-modal" class="modal-overlay">
+  <div class="detail-modal-box">
+    <button id="collection-detail-close-btn" class="detail-close-btn" title="Chiudi">✕</button>
+    <div class="detail-grid">
+      <img id="cd-cover" class="detail-cover" src="" alt="Copertina cofanetto">
+      <div class="detail-info">
+        <h2 id="cd-title" class="detail-title"></h2>
+        <div class="detail-meta">
+          <span id="cd-badge" class="badge badge-collection"></span>
+          <span id="cd-count"></span>
+        </div>
+        <div id="cd-notes" class="detail-plot"></div>
+        <div style="display:flex; gap:0.5rem;">
+          <button id="cd-edit-btn" class="btn btn-outline" style="font-size:0.8rem;">✏️ Modifica cofanetto</button>
+          <button id="cd-delete-btn" class="btn btn-outline" style="font-size:0.8rem;">🗑️ Elimina cofanetto</button>
+        </div>
+      </div>
+    </div>
+    <div class="collection-detail-movies">
+      <h3>Film contenuti</h3>
+      <div id="cd-movies-grid" class="shelf-grid"></div>
     </div>
   </div>
 </div>
@@ -554,11 +664,51 @@ let allMovies = [];
 let filteredMovies = [];
 let currentPage = 1;
 
+let allCollections = [];
+let collectionPendingFile = null;
+let editingCollectionId = null;
+let editingCollectionCoverUrl = null;
+let currentDetailCollectionId = null;
+let collectionExternalCoverUrl = null;
+let collectionParts = [];
+
 // Elementi UI
 const toggleAddBtn = document.getElementById("toggle-add-btn");
 const toggleSearchBtn = document.getElementById("toggle-search-btn");
+const toggleCollectionBtn = document.getElementById("toggle-collection-btn");
 const addPanel = document.getElementById("add-panel");
 const searchPanel = document.getElementById("search-panel");
+const collectionPanel = document.getElementById("collection-panel");
+
+const collectionStubModeLabel = document.getElementById("collection-stub-mode-label");
+const collectionPreviewImg = document.getElementById("collection-preview-img");
+const collectionPreviewPlaceholder = document.getElementById("collection-preview-placeholder");
+const collectionCoverInput = document.getElementById("collection-cover-input");
+const collectionTitleInput = document.getElementById("collection-title");
+const collectionAnalyzeBtn = document.getElementById("collection-analyze-btn");
+const collectionAnalyzeStatus = document.getElementById("collection-analyze-status");
+const collectionPartsBlock = document.getElementById("collection-parts-block");
+const collectionPartsList = document.getElementById("collection-parts-list");
+const collectionType = document.getElementById("collection-type");
+const collectionNotes = document.getElementById("collection-notes");
+const collectionSaveBtn = document.getElementById("collection-save-btn");
+const collectionCancelBtn = document.getElementById("collection-cancel-btn");
+const collectionSaveStatus = document.getElementById("collection-save-status");
+const collectionListEl = document.getElementById("collection-list");
+const fCollection = document.getElementById("f-collection");
+
+const collectionDetailModal = document.getElementById("collection-detail-modal");
+const collectionDetailCloseBtn = document.getElementById("collection-detail-close-btn");
+const cdCover = document.getElementById("cd-cover");
+const cdTitle = document.getElementById("cd-title");
+const cdBadge = document.getElementById("cd-badge");
+const cdCount = document.getElementById("cd-count");
+const cdNotes = document.getElementById("cd-notes");
+const cdEditBtn = document.getElementById("cd-edit-btn");
+const cdDeleteBtn = document.getElementById("cd-delete-btn");
+const cdMoviesGrid = document.getElementById("cd-movies-grid");
+
+const dCollection = document.getElementById("d-collection");
 
 const stubModeLabel = document.getElementById("stub-mode-label");
 const coverInput = document.getElementById("cover-input");
@@ -627,6 +777,7 @@ toggleAddBtn.addEventListener("click", () => {
   const isOpen = addPanel.classList.contains("open");
   addPanel.classList.toggle("open", !isOpen);
   searchPanel.classList.remove("open");
+  collectionPanel.classList.remove("open");
   if (!isOpen && editingMovieId === null) {
     resetAddPanel();
   }
@@ -636,6 +787,17 @@ toggleSearchBtn.addEventListener("click", () => {
   const isOpen = searchPanel.classList.contains("open");
   searchPanel.classList.toggle("open", !isOpen);
   addPanel.classList.remove("open");
+  collectionPanel.classList.remove("open");
+});
+
+toggleCollectionBtn.addEventListener("click", () => {
+  const isOpen = collectionPanel.classList.contains("open");
+  collectionPanel.classList.toggle("open", !isOpen);
+  addPanel.classList.remove("open");
+  searchPanel.classList.remove("open");
+  if (!isOpen && editingCollectionId === null) {
+    resetCollectionPanel();
+  }
 });
 
 // OCR & File Input
@@ -842,6 +1004,52 @@ async function searchTMDB(title) {
   };
 }
 
+async function searchTMDBCollection(title) {
+  const searchUrl = `https://api.themoviedb.org/3/search/collection?api_key=${CONFIG.TMDB_API_KEY}&language=${CONFIG.TMDB_LANGUAGE}&query=${encodeURIComponent(title)}`;
+  const searchRes = await fetch(searchUrl);
+  const searchData = await searchRes.json();
+  const best = searchData.results && searchData.results[0];
+  if (!best) return null;
+
+  const detailsUrl = `https://api.themoviedb.org/3/collection/${best.id}?api_key=${CONFIG.TMDB_API_KEY}&language=${CONFIG.TMDB_LANGUAGE}`;
+  const detailsRes = await fetch(detailsUrl);
+  const details = await detailsRes.json();
+
+  return {
+    name: details.name || title,
+    overview: details.overview || "",
+    poster: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : "",
+    parts: (details.parts || [])
+      .filter((p) => p.title)
+      .sort((a, b) => (a.release_date || "").localeCompare(b.release_date || ""))
+      .map((p) => ({
+        tmdbId: p.id,
+        title: p.title,
+        year: p.release_date ? p.release_date.slice(0, 4) : "",
+        poster: p.poster_path ? `https://image.tmdb.org/t/p/w200${p.poster_path}` : "",
+      })),
+  };
+}
+
+async function fetchTMDBMovieById(tmdbId) {
+  const detailsUrl = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${CONFIG.TMDB_API_KEY}&language=${CONFIG.TMDB_LANGUAGE}&append_to_response=credits`;
+  const detailsRes = await fetch(detailsUrl);
+  const details = await detailsRes.json();
+  const director = (details.credits?.crew || []).find((c) => c.job === "Director");
+  const cast = (details.credits?.cast || []).slice(0, 8).map((c) => c.name);
+
+  return {
+    title: details.title || "",
+    year: details.release_date ? details.release_date.slice(0, 4) : "",
+    duration: details.runtime || "",
+    plot: details.overview || "",
+    genres: (details.genres || []).map((g) => g.name),
+    director: director ? director.name : "",
+    cast,
+    poster: details.poster_path ? `https://image.tmdb.org/t/p/w500${details.poster_path}` : "",
+  };
+}
+
 // Modal Conferma Copertina
 function confirmCoverChoice(foundUrl, mineUrl, titleText) {
   return new Promise((resolve) => {
@@ -910,6 +1118,7 @@ saveBtn.addEventListener("click", async () => {
       director: fDirector.value.trim() || null,
       cast: fCast.value ? fCast.value.split(",").map((s) => s.trim()).filter(Boolean) : null,
       cover_url: coverUrl,
+      collection_id: fCollection.value || null,
     };
 
     if (editingMovieId) {
@@ -970,6 +1179,7 @@ function resetAddPanel() {
 
   [fTitle, fYear, fDuration, fGenres, fDirector, fCast, fPlot].forEach((el) => (el.value = ""));
   if (fRating) fRating.value = "0";
+  fCollection.value = "";
   setStatus(analyzeStatus, "", null);
   setStatus(saveStatus, "", null);
 }
@@ -1001,6 +1211,7 @@ function startEditingMovie(movie) {
   fDirector.value = movie.director || "";
   fCast.value = Array.isArray(movie.cast) ? movie.cast.join(", ") : "";
   fPlot.value = movie.plot || "";
+  fCollection.value = movie.collection_id || "";
 
   reviewForm.hidden = false;
   checkReadyToAnalyze();
@@ -1037,6 +1248,7 @@ async function loadMovies() {
   }
 
   allMovies = data || [];
+  renderCollectionList();
   applyFiltersAndRender();
 }
 
@@ -1110,6 +1322,7 @@ function renderMovieCard(movie) {
 
   const badgeClass = movie.media_type === "DVD" ? "badge-dvd" : "badge-bluray";
   const genreText = Array.isArray(movie.genres) ? movie.genres.join(", ") : "";
+  const collection = movie.collection_id ? allCollections.find((c) => c.id === movie.collection_id) : null;
 
   card.innerHTML = `
     <img class="movie-cover" src="${movie.cover_url || ""}" alt="Copertina di ${escapeHtml(movie.title)}">
@@ -1127,6 +1340,7 @@ function renderMovieCard(movie) {
         <span>${movie.release_year || "—"}</span>
         <span>${movie.duration_minutes ? movie.duration_minutes + "m" : ""}</span>
       </div>
+      ${collection ? `<div class="movie-meta"><span class="badge badge-collection collection-link" title="Fa parte di un cofanetto">📦 ${escapeHtml(collection.title)}</span></div>` : ''}
       <div class="stars" data-id="${movie.id}"></div>
     </div>
   `;
@@ -1134,6 +1348,15 @@ function renderMovieCard(movie) {
   card.querySelector(".movie-cover").addEventListener("click", () => openDetailModal(movie));
   card.querySelector(".btn-edit").addEventListener("click", () => startEditingMovie(movie));
   card.querySelector(".btn-delete").addEventListener("click", () => deleteMovie(movie));
+
+  if (collection) {
+    const collectionBadge = card.querySelector(".collection-link");
+    collectionBadge.style.cursor = "pointer";
+    collectionBadge.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openCollectionDetailModal(collection);
+    });
+  }
 
   renderStars(card.querySelector(".stars"), movie.rating || 0, movie.id);
   return card;
@@ -1151,6 +1374,9 @@ function openDetailModal(movie) {
   dDirector.textContent = movie.director ? `Regia: ${movie.director}` : "";
   dCast.textContent = Array.isArray(movie.cast) && movie.cast.length ? `Cast: ${movie.cast.join(", ")}` : "";
   dPlot.textContent = movie.plot || "Nessuna trama disponibile.";
+
+  const collection = movie.collection_id ? allCollections.find((c) => c.id === movie.collection_id) : null;
+  dCollection.textContent = collection ? `📦 Cofanetto: ${collection.title}` : "";
 
   detailModal.classList.add("active");
 }
@@ -1191,7 +1417,355 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-loadMovies();
+// ===== Gestione Cofanetti =====
+
+async function loadCollections() {
+  const { data, error } = await supabaseClient
+    .from("collections")
+    .select("*")
+    .order("title", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  allCollections = data || [];
+  renderCollectionList();
+  renderCollectionSelect();
+}
+
+function renderCollectionSelect() {
+  const current = fCollection.value;
+  fCollection.innerHTML = '<option value="">Nessuno (film singolo)</option>';
+  allCollections.forEach((col) => {
+    const opt = document.createElement("option");
+    opt.value = col.id;
+    opt.textContent = col.title;
+    fCollection.appendChild(opt);
+  });
+  if (current && allCollections.some((c) => c.id === current)) {
+    fCollection.value = current;
+  }
+}
+
+function renderCollectionList() {
+  collectionListEl.innerHTML = "";
+
+  if (allCollections.length === 0) {
+    const p = document.createElement("p");
+    p.className = "status";
+    p.textContent = "Nessun cofanetto creato.";
+    collectionListEl.appendChild(p);
+    return;
+  }
+
+  allCollections.forEach((col) => {
+    const count = allMovies.filter((m) => m.collection_id === col.id).length;
+    const item = document.createElement("div");
+    item.className = "collection-manage-item";
+    item.style.cursor = "pointer";
+    item.innerHTML = `
+      <img class="collection-manage-cover" src="${col.cover_url || ""}" alt="Copertina di ${escapeHtml(col.title)}">
+      <span class="collection-manage-name">${escapeHtml(col.title)}</span>
+      <span class="collection-manage-count">${count} ${count === 1 ? "film" : "film"}</span>
+    `;
+    item.addEventListener("click", () => openCollectionDetailModal(col));
+    collectionListEl.appendChild(item);
+  });
+}
+
+function resetCollectionPanel() {
+  collectionPendingFile = null;
+  editingCollectionId = null;
+  editingCollectionCoverUrl = null;
+  collectionExternalCoverUrl = null;
+  collectionParts = [];
+
+  collectionStubModeLabel.textContent = "Nuovo";
+  collectionSaveBtn.textContent = "Crea Cofanetto";
+
+  collectionCoverInput.value = "";
+  collectionPreviewImg.hidden = true;
+  collectionPreviewImg.src = "";
+  collectionPreviewPlaceholder.hidden = false;
+
+  collectionTitleInput.value = "";
+  collectionType.value = "DVD";
+  collectionNotes.value = "";
+  collectionPartsList.innerHTML = "";
+  collectionPartsBlock.hidden = true;
+  setStatus(collectionAnalyzeStatus, "", null);
+  setStatus(collectionSaveStatus, "", null);
+}
+
+collectionCoverInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  collectionPendingFile = file;
+  collectionExternalCoverUrl = null;
+  collectionPreviewImg.src = URL.createObjectURL(file);
+  collectionPreviewImg.hidden = false;
+  collectionPreviewPlaceholder.hidden = true;
+});
+
+collectionAnalyzeBtn.addEventListener("click", async () => {
+  const title = collectionTitleInput.value.trim();
+  if (!title) {
+    setStatus(collectionAnalyzeStatus, "Inserisci prima un titolo da cercare.", "error");
+    return;
+  }
+
+  collectionAnalyzeBtn.disabled = true;
+  setStatus(collectionAnalyzeStatus, "Ricerca online in corso...", null);
+
+  try {
+    const found = await searchTMDBCollection(title);
+
+    if (!found) {
+      setStatus(collectionAnalyzeStatus, "Nessun cofanetto trovato online. Puoi comunque salvarlo manualmente.", "error");
+      collectionParts = [];
+      collectionPartsList.innerHTML = "";
+      collectionPartsBlock.hidden = true;
+      return;
+    }
+
+    if (found.poster) {
+      const mineCoverSrc = collectionPreviewImg.hidden ? "" : collectionPreviewImg.src;
+      const choice = await confirmCoverChoice(found.poster, mineCoverSrc, found.name);
+      if (choice === "found") {
+        collectionPendingFile = null;
+        collectionExternalCoverUrl = found.poster;
+        collectionPreviewImg.src = found.poster;
+        collectionPreviewImg.hidden = false;
+        collectionPreviewPlaceholder.hidden = true;
+      }
+    }
+
+    collectionTitleInput.value = found.name;
+    if (found.overview && !collectionNotes.value.trim()) {
+      collectionNotes.value = found.overview;
+    }
+
+    collectionParts = found.parts.map((p) => ({ ...p, checked: true }));
+    renderCollectionParts();
+    collectionPartsBlock.hidden = collectionParts.length === 0;
+
+    setStatus(
+      collectionAnalyzeStatus,
+      collectionParts.length
+        ? `Trovati ${collectionParts.length} film. Seleziona quelli da importare.`
+        : "Cofanetto trovato, ma nessun film associato online.",
+      "ok"
+    );
+  } catch (err) {
+    console.error(err);
+    setStatus(collectionAnalyzeStatus, "Errore nella ricerca online.", "error");
+  } finally {
+    collectionAnalyzeBtn.disabled = false;
+  }
+});
+
+function renderCollectionParts() {
+  collectionPartsList.innerHTML = "";
+  collectionParts.forEach((part, idx) => {
+    const alreadyInLibrary = allMovies.some((m) => (m.title || "").trim().toLowerCase() === part.title.trim().toLowerCase());
+    if (alreadyInLibrary) collectionParts[idx].checked = false;
+
+    const item = document.createElement("label");
+    item.className = "collection-manage-item";
+    item.style.cursor = alreadyInLibrary ? "default" : "pointer";
+    item.innerHTML = `
+      <input type="checkbox" ${collectionParts[idx].checked ? "checked" : ""} ${alreadyInLibrary ? "disabled" : ""} style="flex-shrink:0;">
+      <img class="collection-manage-cover" src="${part.poster || ""}" alt="Copertina di ${escapeHtml(part.title)}">
+      <span class="collection-manage-name">${escapeHtml(part.title)}${part.year ? ` (${part.year})` : ""}</span>
+      <span class="collection-manage-count">${alreadyInLibrary ? "già in libreria" : ""}</span>
+    `;
+    const checkbox = item.querySelector('input[type="checkbox"]');
+    checkbox.addEventListener("change", () => {
+      collectionParts[idx].checked = checkbox.checked;
+    });
+    collectionPartsList.appendChild(item);
+  });
+}
+
+collectionSaveBtn.addEventListener("click", async () => {
+  if (!collectionTitleInput.value.trim()) {
+    setStatus(collectionSaveStatus, "Inserisci un titolo valido.", "error");
+    return;
+  }
+
+  collectionSaveBtn.disabled = true;
+  setStatus(collectionSaveStatus, "Salvataggio...", null);
+
+  try {
+    let coverUrl = editingCollectionCoverUrl;
+    if (collectionPendingFile) {
+      coverUrl = await uploadCover(collectionPendingFile);
+    } else if (collectionExternalCoverUrl) {
+      coverUrl = collectionExternalCoverUrl;
+    }
+
+    const payload = {
+      title: collectionTitleInput.value.trim(),
+      media_type: collectionType.value,
+      notes: collectionNotes.value.trim() || null,
+      cover_url: coverUrl,
+    };
+
+    let collectionId = editingCollectionId;
+
+    if (editingCollectionId) {
+      const { error } = await supabaseClient.from("collections").update(payload).eq("id", editingCollectionId);
+      if (error) throw error;
+      setStatus(collectionSaveStatus, "Modificato con successo.", "ok");
+    } else {
+      const { data, error } = await supabaseClient.from("collections").insert(payload).select().single();
+      if (error) throw error;
+      collectionId = data.id;
+      setStatus(collectionSaveStatus, "Cofanetto creato.", "ok");
+    }
+
+    // Importa i film selezionati trovati online (solo per cofanetti nuovi)
+    const toImport = !editingCollectionId ? collectionParts.filter((p) => p.checked) : [];
+    if (toImport.length > 0) {
+      setStatus(collectionSaveStatus, `Importazione di ${toImport.length} film...`, null);
+      for (const part of toImport) {
+        try {
+          const details = await fetchTMDBMovieById(part.tmdbId);
+          const moviePayload = {
+            title: details.title || part.title,
+            media_type: collectionType.value,
+            release_year: details.year ? parseInt(details.year, 10) : null,
+            duration_minutes: details.duration || null,
+            rating: 0,
+            plot: details.plot || null,
+            genres: details.genres && details.genres.length ? details.genres : null,
+            director: details.director || null,
+            cast: details.cast && details.cast.length ? details.cast : null,
+            cover_url: details.poster || part.poster || null,
+            collection_id: collectionId,
+          };
+          const { error: movieErr } = await supabaseClient.from("movies").insert(moviePayload);
+          if (movieErr) console.error(movieErr);
+        } catch (partErr) {
+          console.error(partErr);
+        }
+      }
+      setStatus(collectionSaveStatus, `Cofanetto creato con ${toImport.length} film importati.`, "ok");
+    }
+
+    setTimeout(() => {
+      resetCollectionPanel();
+    }, 900);
+
+    await loadCollections();
+    await loadMovies();
+  } catch (err) {
+    console.error(err);
+    setStatus(collectionSaveStatus, "Errore durante il salvataggio.", "error");
+  } finally {
+    collectionSaveBtn.disabled = false;
+  }
+});
+
+collectionCancelBtn.addEventListener("click", () => {
+  resetCollectionPanel();
+});
+
+function startEditingCollection(col) {
+  editingCollectionId = col.id;
+  editingCollectionCoverUrl = col.cover_url;
+  collectionPendingFile = null;
+  collectionExternalCoverUrl = null;
+  collectionParts = [];
+  collectionPartsList.innerHTML = "";
+  collectionPartsBlock.hidden = true;
+  setStatus(collectionAnalyzeStatus, "", null);
+
+  collectionStubModeLabel.textContent = "Modifica";
+  collectionSaveBtn.textContent = "Salva Modifiche";
+
+  if (col.cover_url) {
+    collectionPreviewImg.src = col.cover_url;
+    collectionPreviewImg.hidden = false;
+    collectionPreviewPlaceholder.hidden = true;
+  } else {
+    collectionPreviewImg.hidden = true;
+    collectionPreviewPlaceholder.hidden = false;
+  }
+
+  collectionTitleInput.value = col.title || "";
+  collectionType.value = col.media_type || "DVD";
+  collectionNotes.value = col.notes || "";
+  setStatus(collectionSaveStatus, "", null);
+
+  collectionPanel.classList.add("open");
+  addPanel.classList.remove("open");
+  searchPanel.classList.remove("open");
+  collectionPanel.scrollIntoView({ behavior: "smooth" });
+}
+
+async function deleteCollection(col) {
+  if (!confirm(`Vuoi davvero eliminare il cofanetto "${col.title}"? I film contenuti non verranno eliminati, ma scollegati dal cofanetto.`)) return;
+
+  try {
+    const { error } = await supabaseClient.from("collections").delete().eq("id", col.id);
+    if (error) throw error;
+    collectionDetailModal.classList.remove("active");
+    if (editingCollectionId === col.id) resetCollectionPanel();
+    await loadCollections();
+    await loadMovies();
+  } catch (err) {
+    console.error(err);
+    alert("Errore durante l'eliminazione del cofanetto.");
+  }
+}
+
+function openCollectionDetailModal(col) {
+  currentDetailCollectionId = col.id;
+
+  cdCover.src = col.cover_url || "";
+  cdTitle.textContent = col.title || "Senza titolo";
+  cdBadge.textContent = col.media_type || "DVD";
+
+  const movies = allMovies.filter((m) => m.collection_id === col.id);
+  cdCount.textContent = `${movies.length} ${movies.length === 1 ? "film" : "film"}`;
+  cdNotes.textContent = col.notes || "";
+
+  cdMoviesGrid.innerHTML = "";
+  if (movies.length === 0) {
+    const p = document.createElement("p");
+    p.className = "status";
+    p.textContent = "Nessun film in questo cofanetto.";
+    cdMoviesGrid.appendChild(p);
+  } else {
+    movies.forEach((m) => cdMoviesGrid.appendChild(renderMovieCard(m)));
+  }
+
+  collectionDetailModal.classList.add("active");
+}
+
+collectionDetailCloseBtn.addEventListener("click", () => collectionDetailModal.classList.remove("active"));
+collectionDetailModal.addEventListener("click", (e) => {
+  if (e.target === collectionDetailModal) collectionDetailModal.classList.remove("active");
+});
+
+cdEditBtn.addEventListener("click", () => {
+  const col = allCollections.find((c) => c.id === currentDetailCollectionId);
+  if (!col) return;
+  collectionDetailModal.classList.remove("active");
+  startEditingCollection(col);
+});
+
+cdDeleteBtn.addEventListener("click", () => {
+  const col = allCollections.find((c) => c.id === currentDetailCollectionId);
+  if (!col) return;
+  deleteCollection(col);
+});
+
+loadCollections().then(() => loadMovies());
 </script>
 </body>
 </html>
