@@ -75,10 +75,75 @@ h1, h2, h3 {
 /* Pulsanti di Azione Principali */
 .main-actions {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
   justify-content: center;
-  margin-bottom: 1.5rem;
+  gap: 0.4rem;
+  margin-bottom: 1.75rem;
   flex-wrap: wrap;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.55rem;
+}
+.action-group { display: flex; gap: 0.4rem; }
+.action-divider {
+  width: 0;
+  align-self: stretch;
+  border-left: 2px dashed var(--line);
+  margin: 0.25rem 0.35rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: 0.5rem 0.9rem 0.5rem 0.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.action-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+.action-btn:hover { transform: translateY(-2px); }
+.action-btn:hover .action-icon { transform: scale(1.08); }
+.action-btn:active { transform: translateY(0); }
+.action-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+.action-btn.amber-filled { background: var(--amber); color: #1b1405; }
+.action-btn.amber-filled .action-icon { background: rgba(27,20,5,0.15); }
+.action-btn.amber-filled:hover { box-shadow: 0 6px 18px rgba(232,163,61,0.35); }
+
+.action-btn.amber-outline { border-color: var(--amber-dim); color: var(--amber); }
+.action-btn.amber-outline .action-icon { background: rgba(232,163,61,0.15); }
+.action-btn.amber-outline:hover { border-color: var(--amber); background: rgba(232,163,61,0.07); box-shadow: 0 6px 18px rgba(232,163,61,0.18); }
+
+.action-btn.brick-filled { background: var(--brick); color: #fdf1ee; }
+.action-btn.brick-filled .action-icon { background: rgba(253,241,238,0.18); }
+.action-btn.brick-filled:hover { box-shadow: 0 6px 18px rgba(201,67,46,0.4); }
+
+.action-btn.brick-outline { border-color: rgba(201,67,46,0.45); color: var(--brick); }
+.action-btn.brick-outline .action-icon { background: rgba(201,67,46,0.15); }
+.action-btn.brick-outline:hover { border-color: var(--brick); background: rgba(201,67,46,0.07); box-shadow: 0 6px 18px rgba(201,67,46,0.18); }
+
+@media (prefers-reduced-motion: reduce) {
+  .action-btn, .action-icon { transition: none; }
+  .action-btn:hover { transform: none; }
+  .action-btn:hover .action-icon { transform: none; }
 }
 
 /* Pannello Accordion (Form e Cerca) */
@@ -357,6 +422,9 @@ h1, h2, h3 {
   .review-form .row { grid-template-columns: 1fr; }
   .detail-grid { grid-template-columns: 1fr; }
   .detail-cover { max-width: 180px; margin: 0 auto; }
+  .main-actions { flex-direction: column; align-items: stretch; }
+  .action-group { flex-direction: column; }
+  .action-divider { width: auto; border-left: none; border-top: 2px dashed var(--line); margin: 0.35rem 0; }
 }
 </style>
 </head>
@@ -375,10 +443,23 @@ h1, h2, h3 {
 
   <!-- Pulsanti principali -->
   <div class="main-actions">
-    <button id="toggle-add-btn" class="btn btn-primary">➕ Carica Nuovo Film</button>
-    <button id="toggle-search-btn" class="btn btn-outline">🔍 Cerca e Filtra</button>
-    <button id="toggle-collection-btn" class="btn btn-outline">➕ Carica Nuovo Cofanetto</button>
-    <button id="toggle-manage-collections-btn" class="btn btn-outline">📦 Gestisci Cofanetti</button>
+    <div class="action-group">
+      <button id="toggle-add-btn" class="action-btn amber-filled">
+        <span class="action-icon">➕</span><span>Carica Nuovo Film</span>
+      </button>
+      <button id="toggle-search-btn" class="action-btn amber-outline">
+        <span class="action-icon">🔍</span><span>Cerca e Filtra</span>
+      </button>
+    </div>
+    <div class="action-divider" aria-hidden="true"></div>
+    <div class="action-group">
+      <button id="toggle-collection-btn" class="action-btn brick-filled">
+        <span class="action-icon">➕</span><span>Carica Nuovo Cofanetto</span>
+      </button>
+      <button id="toggle-manage-collections-btn" class="action-btn brick-outline">
+        <span class="action-icon">📦</span><span>Gestisci Cofanetti</span>
+      </button>
+    </div>
   </div>
 
   <!-- Pannello Ricerca -->
