@@ -416,6 +416,66 @@ h1, h2, h3 {
 .collection-detail-movies { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--line); }
 .collection-detail-movies h3 { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.8rem; }
 
+/* Schermata di login */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+.auth-box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 2rem 1.75rem;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.auth-box h1 {
+  font-size: 2rem;
+  color: var(--amber);
+  text-align: center;
+  text-shadow: 0 0 18px rgba(232, 163, 61, 0.35);
+}
+.auth-box p.subtitle {
+  margin: -0.5rem 0 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.auth-box label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.auth-box input {
+  background: #14161e;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+}
+.auth-box .btn-primary { width: 100%; padding: 0.7rem; }
+.logout-btn {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 4px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.logout-btn:hover { border-color: var(--amber); color: var(--amber); }
+.hidden { display: none !important; }
+
 @media (max-width: 640px) {
   .ticket { grid-template-columns: 1fr; }
   .ticket-stub { border-right: none; border-bottom: 2px dashed var(--line); }
@@ -430,10 +490,30 @@ h1, h2, h3 {
 </head>
 <body>
 
+<!-- Schermata di Login -->
+<div id="auth-screen" class="auth-screen">
+  <form id="auth-form" class="auth-box">
+    <h1>Cineteca</h1>
+    <p class="subtitle">Accedi per continuare</p>
+    <label>Email
+      <input type="email" id="auth-email" autocomplete="username" required>
+    </label>
+    <label>Password
+      <input type="password" id="auth-password" autocomplete="current-password" required>
+    </label>
+    <button type="submit" id="auth-submit-btn" class="btn btn-primary">Accedi</button>
+    <p id="auth-status" class="status" style="text-align:center;"></p>
+  </form>
+</div>
+
+<!-- Contenuto dell'app, visibile solo dopo il login -->
+<div id="app-shell" class="hidden">
+
 <header class="marquee">
   <div class="marquee-inner">
     <h1>Cineteca</h1>
     <p>la tua videoteca personale</p>
+    <button id="logout-btn" class="logout-btn" style="margin-top:0.6rem;">Esci</button>
   </div>
 </header>
 
@@ -730,6 +810,8 @@ h1, h2, h3 {
   </div>
 </div>
 
+</div><!-- /#app-shell -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
@@ -742,6 +824,66 @@ const CONFIG = {
 };
 
 const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+
+// --- Autenticazione ---
+const authScreen = document.getElementById("auth-screen");
+const appShell = document.getElementById("app-shell");
+const authForm = document.getElementById("auth-form");
+const authEmail = document.getElementById("auth-email");
+const authPassword = document.getElementById("auth-password");
+const authSubmitBtn = document.getElementById("auth-submit-btn");
+const authStatus = document.getElementById("auth-status");
+const logoutBtn = document.getElementById("logout-btn");
+
+let appInitialized = false;
+
+function showApp() {
+  authScreen.classList.add("hidden");
+  appShell.classList.remove("hidden");
+  if (!appInitialized) {
+    appInitialized = true;
+    initApp();
+  }
+}
+
+function showLogin() {
+  appShell.classList.add("hidden");
+  authScreen.classList.remove("hidden");
+}
+
+authForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  authSubmitBtn.disabled = true;
+  setStatus(authStatus, "Accesso in corso...", null);
+  try {
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email: authEmail.value.trim(),
+      password: authPassword.value,
+    });
+    if (error) throw error;
+    authPassword.value = "";
+    setStatus(authStatus, "", null);
+  } catch (err) {
+    console.error(err);
+    setStatus(authStatus, "Email o password non corrette.", "error");
+  } finally {
+    authSubmitBtn.disabled = false;
+  }
+});
+
+logoutBtn.addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+});
+
+supabaseClient.auth.onAuthStateChange((_event, session) => {
+  if (session) {
+    showApp();
+  } else {
+    showLogin();
+  }
+});
+
+// Il caricamento iniziale dei dati avviene in initApp(), chiamata solo dopo il login riuscito.
 
 let pendingFile = null;
 let editingMovieId = null;
@@ -1899,7 +2041,9 @@ cdDeleteBtn.addEventListener("click", () => {
   deleteCollection(col);
 });
 
-loadCollections().then(() => loadMovies());
+function initApp() {
+  loadCollections().then(() => loadMovies());
+}
 </script>
 </body>
 </html>
